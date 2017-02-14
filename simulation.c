@@ -308,6 +308,8 @@ void process_event(int ev_type){
 
 void initialize_state()
 {
+  state = (struct State *) calloc(sizeof(struct Event), 1);
+
   state->cloudlet_1 = 0;
   state->cloudlet_2 = 0;
   state->cloud_1 = 0;
