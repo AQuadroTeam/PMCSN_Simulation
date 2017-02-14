@@ -132,7 +132,6 @@ int initialize_parameters(int argc, char ** argv)
       return EXIT_FAILURE;
     }
 
-    printf("Started simulation with N=%d, S=%d, t_end=%f, seed=%ld\n", N,S,t_end,initial_seed);
     return EXIT_SUCCESS;
   }
 }
@@ -193,6 +192,7 @@ int main(int argc, char ** argv)
   initialize_state();
   initialize_events();
 
+  printf("Started simulation with N=%d, S=%d, t_end=%f, seed=%ld\n", N,S,t_end,initial_seed);
 
 
   while(1)
