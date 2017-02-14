@@ -137,7 +137,7 @@ int main(int argc, char ** argv)
   initialize_events();
   while(1)
   {
-    process_event(events);
+  
 
   }
   return EXIT_SUCCESS;
