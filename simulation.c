@@ -94,9 +94,7 @@ int get_event_type(struct Event t_event){
   return t_event.type;
 }
 
-int get_system_state(){
-  
-}
+int get_system_state(){}
 
 void initialize_state()
 {
