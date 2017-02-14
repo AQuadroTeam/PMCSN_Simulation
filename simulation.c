@@ -8,6 +8,11 @@ EVENT_COMPLETED_2_IN_1 = 5
 EVENT_COMPLETED_2_IN_2 = 6
 EVENT_COMPLETED_2_IN_SETUP = 7
 
+struct event {
+  double time;
+  int type;
+}
+
 int main(int argc, char ** argv)
 {
   return EXIT_SUCCESS;
