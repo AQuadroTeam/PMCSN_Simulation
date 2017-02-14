@@ -82,6 +82,8 @@ struct Event * generate_arrive_event(double lambda, int EVENT){
   event->arrival_time = get_t();
   event->route = -1;
 
+  if(DEBUG){printf("Arrived %d at %f, next time %f\n", EVENT, event->arrival_time, event->time);}
+  
   return event;
 }
 
