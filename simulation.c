@@ -70,45 +70,45 @@ double get_t(){
 
 //Transition Matrix
 
-int arrive_1_free(){
+int arrive_1_free(struct Event *ev){
   state->cloudlet_1++;
   //gen compl_1_1 and arrivo_1
   return 0;
 }
 
-int arrive_2_free(){
+int arrive_2_free(struct Event *ev){
   state->cloudlet_2++;
   //gen compl_2_1 and arrivo_2
   return 0;
 }
 
-int setup_free(){
+int setup_free(struct Event *ev){
   state->setup_2--;
   state->cloud_2++;
   //gen compl_2_2
   return 0;
 }
 
-int arrive_1_busy(){
+int arrive_1_busy(struct Event *ev){
   state->cloud_2++;
   //gen compl_1_2 and arrivo_1
   return 0;
 }
 
-int arrive_2_busy(){
+int arrive_2_busy(struct Event *ev){
   state->cloud_2++;
   //gen compl_2_2 and arrivo_2
   return 0;
 }
 
-int setup_busy(){
+int setup_busy(struct Event *ev){
   state->setup_2--;
   state->cloud_2++;
   //gen compl_2_2
   return 0;
 }
 
-int arrive_1_busy_2(){
+int arrive_1_busy_2(struct Event *ev){
   state->cloudlet_1++;
   state->cloudlet_2--;
   state->setup_2++;
@@ -116,40 +116,40 @@ int arrive_1_busy_2(){
   return 0;
 }
 
-int arrive_2_busy_2(){
+int arrive_2_busy_2(struct Event *ev){
   state->cloud_2++;
   //gen compl_2_2 and arrivo_2
   return 0;
 }
 
-int setup_busy_2(){
+int setup_busy_2(struct Event *ev){
   state->setup_2--;
   state->cloud_2++;
   //gen compl_2_2
   return 0;
 }
 
-int compl_1_1(){
+int compl_1_1(struct Event *ev){
   state->cloudlet_1--;
   return 0;
 }
 
-int compl_1_2(){
+int compl_1_2(struct Event *ev){
   state->cloudlet_2--;
   return 0;
 }
 
-int compl_2_1(){
+int compl_2_1(struct Event *ev){
   state->cloud_1--;
   return 0;
 }
 
-int compl_2_2(){
+int compl_2_2(struct Event *ev){
   state->cloud_2--;
   return 0;
 }
 
-int (*transition_matrix[3][3])() = {{arrive_1_free, arrive_1_busy_2, arrive_1_busy},
+int (*transition_matrix[3][3])(struct Event *) = {{arrive_1_free, arrive_1_busy_2, arrive_1_busy},
                                     {arrive_2_free, arrive_2_busy_2, arrive_2_busy_2},
                                     {setup_free, setup_busy_2, setup_busy}};
 
@@ -271,38 +271,38 @@ int get_system_state(int ev_type){
 
 }
 
-void decrease_job(int ev_type){
-  switch (ev_type) {
+void decrease_job(struct Event *ev){
+  switch (get_event_type(ev)) {
     case EVENT_COMPLETED_1_IN_1:
-       compl_1_1();
+       compl_1_1(ev);
        break;
     case EVENT_COMPLETED_1_IN_2:
-       compl_1_2();
+       compl_1_2(ev);
        break;
     case EVENT_COMPLETED_2_IN_1:
-       compl_2_1();
+       compl_2_1(ev);
        break;
     case EVENT_COMPLETED_2_IN_2:
-       compl_2_2();
+       compl_2_2(ev);
        break;
    }
 }
 
-void gen_next_ev(int ev_type, int s_state){
-  if (transition_matrix[ev_type][s_state]()){
+void gen_next_ev(struct Event *ev, int s_state){
+  if (transition_matrix[get_event_type(ev)][s_state](ev)){
     fprintf(stderr, "Error generating next event\n");
     exit(EXIT_FAILURE);
   };
 }
 
-void process_event(int ev_type){
-  int s_state = get_system_state(ev_type);
+void process_event(struct Event *ev){
+  int s_state = get_system_state(get_event_type(ev));
   int is_arrival = s_state == EVENT_ARRIVE1 || s_state == EVENT_ARRIVE2 || s_state == EVENT_COMPLETED_2_IN_SETUP;
   if (is_arrival){
-    gen_next_ev(ev_type, s_state);
+    gen_next_ev(ev, s_state);
   }
   else{
-    decrease_job(ev_type);
+    decrease_job(ev);
   }
 }
 
