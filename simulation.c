@@ -83,7 +83,7 @@ struct Event * generate_arrive_event(double lambda, int EVENT){
   event->route = -1;
 
   if(DEBUG){printf("Arrived %d at %f, next time %f\n", EVENT, event->arrival_time, event->time);}
-  
+
   return event;
 }
 
@@ -153,6 +153,8 @@ void initialize_state()
   state.cloud_1 = 0;
   state.cloud_2 = 0;
   state.setup_2 = 0;
+
+  t_current = t_begin;
 }
 
 void initialize_generators(long seed){
