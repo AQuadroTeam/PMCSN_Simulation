@@ -1,13 +1,22 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 
-#define EVENT_ARRIVE1 = 1
-#define EVENT_ARRIVE2 = 2
-#define EVENT_COMPLETED_1_IN_1 = 3
-#define EVENT_COMPLETED_1_IN_2 = 4
-#define EVENT_COMPLETED_2_IN_1 = 5
-#define EVENT_COMPLETED_2_IN_2 = 6
-#define EVENT_COMPLETED_2_IN_SETUP = 7
+#define EVENT_ARRIVE1  1
+#define EVENT_ARRIVE2  2
+#define EVENT_COMPLETED_1_IN_1  3
+#define EVENT_COMPLETED_1_IN_2  4
+#define EVENT_COMPLETED_2_IN_1  5
+#define EVENT_COMPLETED_2_IN_2  6
+#define EVENT_COMPLETED_2_IN_SETUP  7
+
+#define lambda_1 3.25
+#define lambda_2 6.25
+#define mu_cloudlet_1 0.45
+#define mu_cloudlet_2 0.30
+#define mu_cloud_1 0.25
+#define mu_cloud_2 0.22
+#define mu_setup_2 1.25
 
 struct Event {
   double time;
@@ -24,9 +33,65 @@ struct State {
 
 struct State state;
 struct Event * events = NULL;
-double t_current;
-double t_begin;
-double t_end;
+double t_current = 0.0;
+double t_begin = 0.0;
+double t_end = 0.0;
+int N;
+int S;
+
+/*
+    STATISTICAL FUNCTIONS
+*/
+double generate_exp(double mean)
+{
+  return 0.0; //TODO: add custom exp
+}
+
+/*
+    EVENTS
+*/
+void push_event(int type, double time)
+{
+  return;
+}
+
+
+/*
+    INITIALIZATION
+*/
+
+int initialize_parameters(int argc, char ** argv)
+{
+  if(argc != 4)
+  {
+    fprintf(stderr, "Usage: %s <N> <S> <end_time>\n", argv[0]);
+    return EXIT_FAILURE;
+  }
+  else
+  {
+    N = strtol(argv[1] , NULL, 10);
+    if (errno != 0)
+    {
+      fprintf(stderr, "Error in conversion - N\n");
+      return EXIT_FAILURE;
+    }
+
+    S = strtol(argv[2] , NULL, 10);
+    if (errno != 0)
+    {
+      fprintf(stderr, "Error in conversion - S\n");
+      return EXIT_FAILURE;
+    }
+
+    t_end = strtod(argv[3] , NULL);
+    if (errno != 0)
+    {
+      fprintf(stderr, "Error in conversion - time\n");
+      return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
+  }
+}
 
 void initialize_state()
 {
@@ -37,35 +102,38 @@ void initialize_state()
   state.setup_2 = 0;
 }
 
-double generate_exp(mean)
-{
-  return 0.0; //TODO: add custom exp
-}
-
 void initialize_events()
 {
   push_event(EVENT_ARRIVE1, generate_exp(lambda_1));
   push_event(EVENT_ARRIVE2, generate_exp(lambda_2));
 }
 
-void process_arrive_1_all(struct Event * event)
-{
-  if(state.cloudlet_1 == N )
-}
+/*
+
+*/
 
 void process_event(struct Event * first)
 {
-  switch (first->type):
-  case ARRIVE_1:
-    process_arrive_1(first)
 
 }
 
+
+
+
+
+
+
+
+
 int main(int argc, char ** argv)
 {
+  if(initialize_parameters(argc, argv) != EXIT_SUCCESS){
+    return EXIT_FAILURE;
+  }
+
   initialize_state();
   initialize_events();
-  while()
+  while(1)
   {
     process_event(events);
 
