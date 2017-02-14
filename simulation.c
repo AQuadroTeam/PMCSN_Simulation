@@ -99,6 +99,7 @@ struct Event * generate_arrive_event(double lambda, int EVENT){
 
 void exit_event(struct Event * event){
   counter_per_path[event->path-3]++;
+  if(DEBUG){printf("Exited packet with path %d at %f\n", event->path, get_t());}
   free(event);
 }
 
