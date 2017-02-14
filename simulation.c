@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include "linked_list.h"
 
 #define EVENT_ARRIVE1  1
 #define EVENT_ARRIVE2  2
@@ -21,6 +22,8 @@
 struct Event {
   double time;
   int type;
+  struct Event * next;
+  
 };
 
 struct State {
@@ -47,13 +50,7 @@ double generate_exp(double mean)
   return 0.0; //TODO: add custom exp
 }
 
-/*
-    EVENTS
-*/
-void push_event(int type, double time)
-{
-  return;
-}
+
 
 
 /*
