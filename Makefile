@@ -1,4 +1,4 @@
-TARGET = runs_up
+TARGET = simulation
 LIBS = -lm
 CC = gcc
 CFLAGS = -Wall -Wextra -O3
