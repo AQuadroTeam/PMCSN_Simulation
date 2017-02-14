@@ -131,7 +131,7 @@ void process_event(struct Event * first)
 
 int main(int argc, char ** argv)
 {
-  if(initialize_parameters(argc, argv) != EXIT_SUCCESS){
+  if(initialize_parameters(argc, argv) == EXIT_FAILURE){
     return EXIT_FAILURE;
   }
 
