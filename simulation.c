@@ -94,7 +94,9 @@ int get_event_type(struct Event t_event){
   return t_event.type;
 }
 
-int get_system_state(){}
+int get_system_state(){
+  
+}
 
 void initialize_state()
 {
@@ -137,7 +139,7 @@ int main(int argc, char ** argv)
   initialize_events();
   while(1)
   {
-  
+
 
   }
   return EXIT_SUCCESS;
