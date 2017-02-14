@@ -14,6 +14,12 @@
 #define EVENT_COMPLETED_2_IN_2  6
 #define EVENT_COMPLETED_2_IN_SETUP  7
 
+#define PATH_1_1 3
+#define PATH_1_2 4
+#define PATH_2_1 5
+#define PATH_2_2 6
+#define PATH_2_S_2 7
+
 #define lambda_1 3.25
 #define lambda_2 6.25
 #define mu_cloudlet_1 0.45
@@ -30,7 +36,7 @@ struct Event {
   struct Event * next;
   struct Event * prev;
   double arrival_time;
-  int route;
+  int path;
 };
 
 struct State {
@@ -44,6 +50,10 @@ struct State {
 struct State state;
 double t_current = 0.0;
 double t_begin = 0.0;
+
+long counter_per_path[5];
+
+// parameters
 double t_end = 0.0;
 int N;
 int S;
@@ -80,14 +90,15 @@ struct Event * generate_arrive_event(double lambda, int EVENT){
   event->time = generate_next_time(lambda, EVENT);
   event->type = EVENT;
   event->arrival_time = get_t();
-  event->route = -1;
+  event->path = -1;
 
   if(DEBUG){printf("Arrived %d at %f, next time %f\n", EVENT, event->arrival_time, event->time);}
 
   return event;
 }
 
-void destroy_event(struct Event * event){
+void exit_event(struct Event * event){
+  counter_per_path[event->path-3]++;
   free(event);
 }
 

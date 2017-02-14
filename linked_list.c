@@ -9,7 +9,7 @@ struct Event {
   struct Event * next;
   struct Event * prev;
   double arrival_time;
-  int route;
+  int path;
 };
 
 struct Event * events = NULL;
