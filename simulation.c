@@ -23,7 +23,8 @@ struct Event {
   double time;
   int type;
   struct Event * next;
-
+  double arrival_time;
+  int route;
 };
 
 struct State {

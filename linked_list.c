@@ -5,6 +5,8 @@ struct Event {
   double time;
   int type;
   struct Event * next;
+  double arrival_time;
+  int route;
 };
 
 struct Event * push_event(struct Event *event){}
