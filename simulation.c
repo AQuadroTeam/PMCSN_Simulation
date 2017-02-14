@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <errno.h>
 #include "linked_list.h"
+#include "rngs.h"
+#include "rvms.h"
+#include "rvgs.h"
 
 #define EVENT_ARRIVE1  1
 #define EVENT_ARRIVE2  2
@@ -42,16 +45,43 @@ double t_begin = 0.0;
 double t_end = 0.0;
 int N;
 int S;
+long initial_seed;
+
+
+double get_t(){
+  return t_current;
+}
 
 /*
     STATISTICAL FUNCTIONS
 */
-double generate_exp(double mean)
+double generate_exp(double lambda, int stream)
 {
-  return 0.0; //TODO: add custom exp
+  SelectStream(stream);
+  return Exponential(1/lambda); //rngs use mean instead of parameter
+}
+
+double generate_arrive_time(double lambda, int stream){
+  return generate_exp(lambda, stream) + get_t();
 }
 
 
+struct Event * generate_arrive_event(double lambda, int EVENT){
+  struct Event * event = calloc(sizeof(struct Event), 1);
+  if(event == NULL){
+    fprintf(stderr, "Error in calloc!\n");
+    return NULL;
+  }
+
+  event->next = NULL;
+  event->prev = NULL;
+  event->time = generate_arrive_time(lambda, EVENT);
+  event->type = EVENT;
+  event->arrival_time = get_t();
+  event->route = -1;
+
+  return event;
+}
 
 
 /*
@@ -60,13 +90,14 @@ double generate_exp(double mean)
 
 int initialize_parameters(int argc, char ** argv)
 {
-  if(argc != 4)
+  if(argc != 5)
   {
-    fprintf(stderr, "Usage: %s <N> <S> <end_time>\n", argv[0]);
+    fprintf(stderr, "Usage: %s <N> <S> <end_time> <initial_seed>\n", argv[0]);
     return EXIT_FAILURE;
   }
   else
   {
+    errno = 0;
     N = strtol(argv[1] , NULL, 10);
     if (errno != 0)
     {
@@ -87,6 +118,13 @@ int initialize_parameters(int argc, char ** argv)
       fprintf(stderr, "Error in conversion - time\n");
       return EXIT_FAILURE;
     }
+
+    initial_seed = strtol(argv[4] , NULL, 10);
+    if (errno != 0)
+    {
+      fprintf(stderr, "Error in conversion - initial seed\n");
+      return EXIT_FAILURE;
+    }
     return EXIT_SUCCESS;
   }
 }
@@ -96,7 +134,7 @@ int get_event_type(struct Event t_event){
 }
 
 int get_system_state(){
-  
+
 }
 
 void initialize_state()
@@ -108,11 +146,19 @@ void initialize_state()
   state.setup_2 = 0;
 }
 
+void initialize_generators(long seed){
+  PlantSeeds(seed);
+}
+
+
 void initialize_events()
 {
-  /*EVENT_ARRIVE1, generate_exp(lambda_1)
-  push_event();
-  push_event(EVENT_ARRIVE2, generate_exp(lambda_2));*/
+  struct Event * first_1 = generate_arrive_event(lambda_1, EVENT_ARRIVE1);
+  push_event(first_1);
+
+  struct Event * first_2 = generate_arrive_event(lambda_2, EVENT_ARRIVE2);
+  push_event(first_2);
+
 }
 
 /*
@@ -135,9 +181,11 @@ int main(int argc, char ** argv)
   if(initialize_parameters(argc, argv) == EXIT_FAILURE){
     return EXIT_FAILURE;
   }
-
+  initialize_generators(initial_seed);
   initialize_state();
   initialize_events();
+
+  
 
   while(1)
   {
