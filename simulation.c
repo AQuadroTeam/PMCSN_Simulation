@@ -199,7 +199,7 @@ int main(int argc, char ** argv)
   printf("Started simulation with N=%d, S=%d, t_end=%f, seed=%ld\n", N,S,t_end,initial_seed);
 
 
-  while(1)
+  while(get_t() <= t_end )
   {
 
 
