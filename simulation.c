@@ -131,6 +131,8 @@ int initialize_parameters(int argc, char ** argv)
       fprintf(stderr, "Error in conversion - initial seed\n");
       return EXIT_FAILURE;
     }
+
+    printf("Started simulation with N=%d, S=%d, t_end=%f, seed=%ld\n", N,S,t_end,initial_seed);
     return EXIT_SUCCESS;
   }
 }
@@ -190,7 +192,7 @@ int main(int argc, char ** argv)
   initialize_generators(initial_seed);
   initialize_state();
   initialize_events();
-  
+
 
 
   while(1)
