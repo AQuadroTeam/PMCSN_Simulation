@@ -23,7 +23,7 @@ struct Event {
   double time;
   int type;
   struct Event * next;
-  
+
 };
 
 struct State {
@@ -107,8 +107,9 @@ void initialize_state()
 
 void initialize_events()
 {
-  push_event(EVENT_ARRIVE1, generate_exp(lambda_1));
-  push_event(EVENT_ARRIVE2, generate_exp(lambda_2));
+  /*EVENT_ARRIVE1, generate_exp(lambda_1)
+  push_event();
+  push_event(EVENT_ARRIVE2, generate_exp(lambda_2));*/
 }
 
 /*
