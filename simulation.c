@@ -6,13 +6,13 @@
 #include "rvms.h"
 #include "rvgs.h"
 
-#define EVENT_ARRIVE1  1
-#define EVENT_ARRIVE2  2
+#define EVENT_ARRIVE1  0
+#define EVENT_ARRIVE2  1
 #define EVENT_COMPLETED_1_IN_1  3
 #define EVENT_COMPLETED_1_IN_2  4
 #define EVENT_COMPLETED_2_IN_1  5
 #define EVENT_COMPLETED_2_IN_2  6
-#define EVENT_COMPLETED_2_IN_SETUP  7
+#define EVENT_COMPLETED_2_IN_SETUP  2
 
 #define FREE 0
 #define BUSY_CLASS_2 1
