@@ -1,17 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
-EVENT_ARRIVE1 = 1
-EVENT_ARRIVE2 = 2
-EVENT_COMPLETED_1_IN_1 = 3
-EVENT_COMPLETED_1_IN_2 = 4
-EVENT_COMPLETED_2_IN_1 = 5
-EVENT_COMPLETED_2_IN_2 = 6
-EVENT_COMPLETED_2_IN_SETUP = 7
+
+#define EVENT_ARRIVE1 = 1
+#define EVENT_ARRIVE2 = 2
+#define EVENT_COMPLETED_1_IN_1 = 3
+#define EVENT_COMPLETED_1_IN_2 = 4
+#define EVENT_COMPLETED_2_IN_1 = 5
+#define EVENT_COMPLETED_2_IN_2 = 6
+#define EVENT_COMPLETED_2_IN_SETUP = 7
 
 struct Event {
   double time;
   int type;
-}
+};
 
 struct State {
   int cloudlet_1; //n1
@@ -19,7 +20,7 @@ struct State {
   int cloud_1;
   int cloud_2;
   int setup_2;
-}
+};
 
 struct State state;
 struct Event * events = NULL;
