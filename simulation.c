@@ -22,6 +22,8 @@
 #define mu_cloud_2 0.22
 #define mu_setup_2 1.25
 
+#define DEBUG 1
+
 struct Event {
   double time;
   int type;
@@ -61,7 +63,7 @@ double generate_exp(double lambda, int stream)
   return Exponential(1/lambda); //rngs use mean instead of parameter
 }
 
-double generate_arrive_time(double lambda, int stream){
+double generate_next_time(double lambda, int stream){
   return generate_exp(lambda, stream) + get_t();
 }
 
@@ -75,12 +77,16 @@ struct Event * generate_arrive_event(double lambda, int EVENT){
 
   event->next = NULL;
   event->prev = NULL;
-  event->time = generate_arrive_time(lambda, EVENT);
+  event->time = generate_next_time(lambda, EVENT);
   event->type = EVENT;
   event->arrival_time = get_t();
   event->route = -1;
 
   return event;
+}
+
+void destroy_event(struct Event * event){
+  free(event);
 }
 
 
@@ -184,8 +190,8 @@ int main(int argc, char ** argv)
   initialize_generators(initial_seed);
   initialize_state();
   initialize_events();
-
   
+
 
   while(1)
   {

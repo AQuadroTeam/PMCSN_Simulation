@@ -93,11 +93,24 @@ struct Event * remove_event(struct Event *event){
 
 struct Event * pop_event()
 {
+  if(events == NULL){
+    return NULL;
+  }
+  if(events->next == NULL){
+    struct Event * event = events;
+    events = NULL;
+    last = NULL;
+    return event;
+  }
+
   struct Event * first = events;
   events = events->next;
   events->prev = NULL;
+
   first->prev = NULL;
   first->next = NULL;
+
+
   return first;
 }
 
