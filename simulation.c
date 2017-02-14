@@ -28,6 +28,14 @@ double t_current;
 double t_begin;
 double t_end;
 
+int get_event_type(struct State t_state){
+  return t_state.type;
+}
+
+int get_system_state(){
+
+}
+
 int main(int argc, char ** argv)
 {
   return EXIT_SUCCESS;
