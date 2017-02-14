@@ -23,6 +23,7 @@ struct Event {
   double time;
   int type;
   struct Event * next;
+  struct Event * prev;
   double arrival_time;
   int route;
 };
@@ -135,9 +136,10 @@ int main(int argc, char ** argv)
 
   initialize_state();
   initialize_events();
+
   while(1)
   {
-  
+
 
   }
   return EXIT_SUCCESS;
