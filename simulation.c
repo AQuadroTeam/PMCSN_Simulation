@@ -36,7 +36,6 @@ struct State {
 };
 
 struct State state;
-struct Event * events = NULL;
 double t_current = 0.0;
 double t_begin = 0.0;
 double t_end = 0.0;

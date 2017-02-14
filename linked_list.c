@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+struct Event * events = NULL;
+
 struct Event {
   double time;
   int type;
