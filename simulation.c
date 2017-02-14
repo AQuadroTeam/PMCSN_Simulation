@@ -93,8 +93,8 @@ int initialize_parameters(int argc, char ** argv)
   }
 }
 
-int get_event_type(struct State t_state){
-  return t_state.type;
+int get_event_type(struct Event t_event){
+  return t_event.type;
 }
 
 int get_system_state(){}
