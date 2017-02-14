@@ -93,6 +93,12 @@ int initialize_parameters(int argc, char ** argv)
   }
 }
 
+int get_event_type(struct State t_state){
+  return t_state.type;
+}
+
+int get_system_state(){}
+
 void initialize_state()
 {
   state.cloudlet_1 = 0;
@@ -116,8 +122,6 @@ void process_event(struct Event * first)
 {
 
 }
-
-
 
 
 
