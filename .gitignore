@@ -1,3 +1,6 @@
+# Compiled files
+simulation
+
 # Object files
 *.o
 *.ko
