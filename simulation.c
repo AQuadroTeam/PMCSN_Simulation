@@ -418,8 +418,7 @@ int main(int argc, char ** argv)
 
   while(get_t() <= t_end )
   {
-
-
+    process_event(pop_event());
   }
   return EXIT_SUCCESS;
 
