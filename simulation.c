@@ -23,6 +23,7 @@
 #define PATH_2_1 5
 #define PATH_2_2 6
 #define PATH_2_S_2 7
+#define PATH_NOT_TO_UPDATE -1
 
 #define lambda_1 3.25
 #define lambda_2 6.25
@@ -68,90 +69,9 @@ double get_t(){
   return t_current;
 }
 
-//Transition Matrix
-
-int arrive_1_free(struct Event *ev){
-  state->cloudlet_1++;
-  //gen compl_1_1 and arrivo_1
-  return 0;
+void set_t(double time){
+  t_current = time;
 }
-
-int arrive_2_free(struct Event *ev){
-  state->cloudlet_2++;
-  //gen compl_2_1 and arrivo_2
-  return 0;
-}
-
-int setup_free(struct Event *ev){
-  state->setup_2--;
-  state->cloud_2++;
-  //gen compl_2_2
-  return 0;
-}
-
-int arrive_1_busy(struct Event *ev){
-  state->cloud_2++;
-  //gen compl_1_2 and arrivo_1
-  return 0;
-}
-
-int arrive_2_busy(struct Event *ev){
-  state->cloud_2++;
-  //gen compl_2_2 and arrivo_2
-  return 0;
-}
-
-int setup_busy(struct Event *ev){
-  state->setup_2--;
-  state->cloud_2++;
-  //gen compl_2_2
-  return 0;
-}
-
-int arrive_1_busy_2(struct Event *ev){
-  state->cloudlet_1++;
-  state->cloudlet_2--;
-  state->setup_2++;
-  //gen compl_1_1 and compl_setup and arrivo_1
-  return 0;
-}
-
-int arrive_2_busy_2(struct Event *ev){
-  state->cloud_2++;
-  //gen compl_2_2 and arrivo_2
-  return 0;
-}
-
-int setup_busy_2(struct Event *ev){
-  state->setup_2--;
-  state->cloud_2++;
-  //gen compl_2_2
-  return 0;
-}
-
-int compl_1_1(struct Event *ev){
-  state->cloudlet_1--;
-  return 0;
-}
-
-int compl_1_2(struct Event *ev){
-  state->cloudlet_2--;
-  return 0;
-}
-
-int compl_2_1(struct Event *ev){
-  state->cloud_1--;
-  return 0;
-}
-
-int compl_2_2(struct Event *ev){
-  state->cloud_2--;
-  return 0;
-}
-
-int (*transition_matrix[3][3])(struct Event *) = {{arrive_1_free, arrive_1_busy_2, arrive_1_busy},
-                                    {arrive_2_free, arrive_2_busy_2, arrive_2_busy_2},
-                                    {setup_free, setup_busy_2, setup_busy}};
 
 /*
     STATISTICAL FUNCTIONS
@@ -166,6 +86,17 @@ double generate_next_time(double lambda, int stream){
   return generate_exp(lambda, stream) + get_t();
 }
 
+struct Event * generate_completion_event(struct Event * event, double mu, int next_event_type, int path){
+
+  event->time = generate_next_time(mu, next_event_type);
+  event->type = next_event_type;
+  if (path != PATH_NOT_TO_UPDATE){
+    event->path = path;
+  }
+  if(DEBUG){printf("Completion of packet type %d arrived at %f, next time %f\n", next_event_type, event->arrival_time, event->time);}
+
+  return event;
+}
 
 struct Event * generate_arrive_event(double lambda, int EVENT){
   struct Event * event = (struct Event *)calloc(sizeof(struct Event), 1);
@@ -179,7 +110,7 @@ struct Event * generate_arrive_event(double lambda, int EVENT){
   event->time = generate_next_time(lambda, EVENT);
   event->type = EVENT;
   event->arrival_time = get_t();
-  event->path = -1;
+  event->path = -1; //Invalid path
 
   if(DEBUG){printf("Arrived %d at %f, next time %f\n", EVENT, event->arrival_time, event->time);}
 
@@ -191,6 +122,144 @@ void exit_event(struct Event * event){
   if(DEBUG){printf("Exited packet with path %d at %f\n", event->path, get_t());}
   free(event);
 }
+
+//Transition Matrix
+
+int arrive_1_free(struct Event *ev){
+  state->cloudlet_1++;
+
+  //Complete event 1_1
+  generate_completion_event(ev, mu_cloudlet_1, EVENT_COMPLETED_1_IN_1, PATH_1_1);
+  push_event(ev);
+
+  //Generate next arrival 1
+  struct Event * arrival = generate_arrive_event(lambda_1, EVENT_ARRIVE1);
+  push_event(arrival);
+  return 0;
+}
+
+int arrive_2_free(struct Event *ev){
+  state->cloudlet_2++;
+
+  //Complete event 2_1
+  generate_completion_event(ev, mu_cloudlet_2, EVENT_COMPLETED_2_IN_1, PATH_2_1);
+  push_event(ev);
+
+  //Generate next arrival 2
+  struct Event * arrival = generate_arrive_event(lambda_2, EVENT_ARRIVE2);
+  push_event(arrival);
+  return 0;
+}
+
+void manage_setup_arrival(struct Event *ev){
+  state->setup_2--;
+  state->cloud_2++;
+  //Complete event 2_2
+  generate_completion_event(ev, mu_cloud_2, EVENT_COMPLETED_2_IN_2, PATH_2_S_2);
+  push_event(ev);
+}
+
+int setup_free(struct Event *ev){
+  manage_setup_arrival(ev);
+  return 0;
+}
+
+int arrive_1_busy(struct Event *ev){
+  state->cloud_2++;
+  //Complete event 1_2
+  generate_completion_event(ev, mu_cloud_1, EVENT_COMPLETED_1_IN_2, PATH_1_2);
+  push_event(ev);
+
+  //Generate next arrival 1
+  struct Event * arrival = generate_arrive_event(lambda_1, EVENT_ARRIVE1);
+  push_event(arrival);
+  return 0;
+}
+
+int arrive_2_busy(struct Event *ev){
+  state->cloud_2++;
+  //Complete event 2_2
+  generate_completion_event(ev, mu_cloud_2, EVENT_COMPLETED_2_IN_2, PATH_2_2);
+  push_event(ev);
+
+  //Generate next arrival 2
+  struct Event * arrival = generate_arrive_event(lambda_2, EVENT_ARRIVE2);
+  push_event(arrival);
+  return 0;
+}
+
+int setup_busy(struct Event *ev){
+  manage_setup_arrival(ev);
+  return 0;
+}
+
+int arrive_1_busy_2(struct Event *ev){
+  state->cloudlet_1++;
+  state->cloudlet_2--;
+  state->setup_2++;
+  //gen compl_1_1 and compl_setup and arrivo_1
+
+  //Complete event 1_1
+  generate_completion_event(ev, mu_cloud_1, EVENT_COMPLETED_1_IN_1, PATH_1_1);
+  push_event(ev);
+
+  //Complete event 2_setup, seek last event in list with type EVENT_COMPLETED_2_IN_1
+  struct Event *to_remove = remove_last_event_of_type(EVENT_COMPLETED_2_IN_1);
+  generate_completion_event(to_remove, mu_setup_2, EVENT_COMPLETED_2_IN_SETUP, PATH_2_S_2);
+  push_event(to_remove);
+
+  //Generate next arrival 1
+  struct Event * arrival = generate_arrive_event(lambda_1, EVENT_ARRIVE1);
+  push_event(arrival);
+  return 0;
+}
+
+int arrive_2_busy_2(struct Event *ev){
+  state->cloud_2++;
+  //Complete event 2_2
+  generate_completion_event(ev, mu_cloud_2, EVENT_COMPLETED_2_IN_2, PATH_2_2);
+  push_event(ev);
+
+  //Generate next arrival 2
+  struct Event * arrival = generate_arrive_event(lambda_2, EVENT_ARRIVE2);
+  push_event(arrival);
+  return 0;
+}
+
+int setup_busy_2(struct Event *ev){
+  manage_setup_arrival(ev);
+  return 0;
+}
+
+int compl_1_1(struct Event *ev){
+  state->cloudlet_1--;
+  exit_event(ev);
+  return 0;
+}
+
+int compl_1_2(struct Event *ev){
+  state->cloudlet_2--;
+  exit_event(ev);
+  return 0;
+}
+
+int compl_2_1(struct Event *ev){
+  state->cloud_1--;
+  exit_event(ev);
+  return 0;
+}
+
+int compl_2_2(struct Event *ev){
+  state->cloud_2--;
+  exit_event(ev);
+  return 0;
+}
+
+int (*transition_matrix[3][3])(struct Event *) = {{arrive_1_free, arrive_1_busy_2, arrive_1_busy},
+                                    {arrive_2_free, arrive_2_busy_2, arrive_2_busy_2},
+                                    {setup_free, setup_busy_2, setup_busy}};
+
+
 
 /*
     INITIALIZATION
@@ -297,6 +366,8 @@ void gen_next_ev(struct Event *ev, int s_state){
 
 void process_event(struct Event *ev){
   int s_state = get_system_state(get_event_type(ev));
+  //set t_current
+  set_t(ev->time);
   int is_arrival = s_state == EVENT_ARRIVE1 || s_state == EVENT_ARRIVE2 || s_state == EVENT_COMPLETED_2_IN_SETUP;
   if (is_arrival){
     gen_next_ev(ev, s_state);
