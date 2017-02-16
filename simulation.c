@@ -57,7 +57,7 @@ double t_begin = 0.0;
 
 long counter_per_path[5];
 
-// parameters
+// Parameters
 double t_end = 0.0;
 int N;
 int S;
