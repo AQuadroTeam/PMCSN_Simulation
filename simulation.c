@@ -62,6 +62,7 @@ long counter_per_path[5];
 // 2 events arrive are always on system
 long counter_generated = -2;
 long counter_exited = 0;
+long double mean_time_per_path[5] = {0,0,0,0,0};
 
 // Parameters
 double t_end = 0.0;
@@ -135,6 +136,7 @@ struct Event * generate_arrive_event(double lambda, int EVENT){
 void exit_event(struct Event * event){
   counter_exited++;
   counter_per_path[event->path-3]++;
+  mean_time_per_path[event->path-3] += get_t()-event->arrival_time;
   if(DEBUG){printf("Event Destroyed: Exited packet with path %d at %f\n", event->path, get_t());}
   free(event);
 }
@@ -244,7 +246,7 @@ int arrive_1_busy_2(struct Event *ev){
   //gen compl_1_1 and compl_setup and arrivo_1
 
   //Complete event 1_1
-  generate_completion_event(ev, mu_cloud_1, EVENT_COMPLETED_1_IN_1, PATH_1_1);
+  generate_completion_event(ev, mu_cloudlet_1, EVENT_COMPLETED_1_IN_1, PATH_1_1);
   push_event(ev);
 
   //Complete event 2_setup, seek last event in list with type EVENT_COMPLETED_2_IN_1
@@ -502,6 +504,8 @@ int main(int argc, char ** argv)
 
   printf("End Simulation with: ");
   print_actual_state();
+  printf("Mean for path: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%Lf - %Lf - %Lf - %Lf - %Lf\n", mean_time_per_path[0]/counter_per_path[0],mean_time_per_path[1]/counter_per_path[1],mean_time_per_path[2]/counter_per_path[2],mean_time_per_path[3]/counter_per_path[3],mean_time_per_path[4]/counter_per_path[4]);
+  printf("P calculated: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%f - %f - %f - %f - %f\n", counter_per_path[0]*1.0/counter_exited,counter_per_path[1]*1.0/counter_exited,counter_per_path[2]*1.0/counter_exited,counter_per_path[3]*1.0/counter_exited,counter_per_path[4]*1.0/counter_exited);
   return EXIT_SUCCESS;
 
 
