@@ -33,7 +33,7 @@
 #define mu_cloud_2 0.22
 #define mu_setup_2 1.25
 
-#define DEBUG 0
+#define DEBUG 1
 
 struct Event {
   double time;
@@ -76,7 +76,7 @@ void set_t(double time){
 
 void print_actual_state()
 {
-  fprintf(stdout, "state at %f: cloudlet (%d,%d), cloud (%d,%d), setup %d\n",get_t(),state->cloudlet_1,state->cloudlet_2,state->cloud_1,state->cloud_2,state->setup_2);
+  fprintf(stdout, "state at %f: cloudlet (%d,%d), cloud (%d,%d), setup %d. Path completed: cloudlet(%ld,%ld),cloud(%ld,%ld),withSetup(%ld)\n",get_t(),state->cloudlet_1,state->cloudlet_2,state->cloud_1,state->cloud_2,state->setup_2, counter_per_path[0],counter_per_path[2],counter_per_path[1],counter_per_path[3],counter_per_path[4]);
 }
 
 
