@@ -33,7 +33,7 @@
 #define mu_cloud_2 0.22
 #define mu_setup_2 1.25
 
-#define DEBUG 1
+#define DEBUG 0
 
 struct Event {
   double time;
@@ -65,6 +65,7 @@ int S;
 long initial_seed;
 
 
+
 double get_t(){
   return t_current;
 }
@@ -72,6 +73,12 @@ double get_t(){
 void set_t(double time){
   t_current = time;
 }
+
+void print_actual_state()
+{
+  fprintf(stdout, "state at %f: cloudlet (%d,%d), cloud (%d,%d), setup %d\n",get_t(),state->cloudlet_1,state->cloudlet_2,state->cloud_1,state->cloud_2,state->setup_2);
+}
+
 
 /*
     STATISTICAL FUNCTIONS
@@ -93,7 +100,7 @@ struct Event * generate_completion_event(struct Event * event, double mu, int ne
   if (path != PATH_NOT_TO_UPDATE){
     event->path = path;
   }
-  if(DEBUG){printf("Completion of packet type %d arrived at %f, next time %f\n", next_event_type, event->arrival_time, event->time);}
+  if(DEBUG){printf("Event Generation: Completion of packet type %d arrived at %f, next time %f\n", next_event_type, event->arrival_time, event->time);}
 
   return event;
 }
@@ -112,21 +119,24 @@ struct Event * generate_arrive_event(double lambda, int EVENT){
   event->arrival_time = get_t();
   event->path = -1; //Invalid path
 
-  if(DEBUG){printf("Arrived %d at %f, next time %f\n", EVENT, event->arrival_time, event->time);}
+  if(DEBUG){printf("Event Generation: Arrived %d at %f, next time %f\n", EVENT, event->arrival_time, event->time);}
 
   return event;
 }
 
 void exit_event(struct Event * event){
   counter_per_path[event->path-3]++;
-  if(DEBUG){printf("Exited packet with path %d at %f\n", event->path, get_t());}
+  if(DEBUG){printf("Event Destroyed: Exited packet with path %d at %f\n", event->path, get_t());}
   free(event);
 }
 
 //Transition Matrix
 
 int arrive_1_free(struct Event *ev){
+  if(DEBUG){printf("\nArrived 1 in free\n");}
+  if(DEBUG)print_actual_state();
   state->cloudlet_1++;
+  if(DEBUG)print_actual_state();
 
   //Complete event 1_1
   generate_completion_event(ev, mu_cloudlet_1, EVENT_COMPLETED_1_IN_1, PATH_1_1);
@@ -139,7 +149,10 @@ int arrive_1_free(struct Event *ev){
 }
 
 int arrive_2_free(struct Event *ev){
+  if(DEBUG){printf("\nArrived 2 free\n");}
+  if(DEBUG)print_actual_state();
   state->cloudlet_2++;
+  if(DEBUG)print_actual_state();
 
   //Complete event 2_1
   generate_completion_event(ev, mu_cloudlet_2, EVENT_COMPLETED_2_IN_1, PATH_2_1);
@@ -152,8 +165,11 @@ int arrive_2_free(struct Event *ev){
 }
 
 void manage_setup_arrival(struct Event *ev){
+  if(DEBUG){printf("\nSetup 2\n");}
+  if(DEBUG)print_actual_state();
   state->setup_2--;
   state->cloud_2++;
+  if(DEBUG)print_actual_state();
   //Complete event 2_2
   generate_completion_event(ev, mu_cloud_2, EVENT_COMPLETED_2_IN_2, PATH_2_S_2);
   push_event(ev);
@@ -165,7 +181,10 @@ int setup_free(struct Event *ev){
 }
 
 int arrive_1_busy(struct Event *ev){
-  state->cloud_2++;
+  if(DEBUG){printf("\nArrived 1 in Busy\n");}
+  if(DEBUG)print_actual_state();
+  state->cloud_1++;
+  if(DEBUG)print_actual_state();
   //Complete event 1_2
   generate_completion_event(ev, mu_cloud_1, EVENT_COMPLETED_1_IN_2, PATH_1_2);
   push_event(ev);
@@ -177,7 +196,10 @@ int arrive_1_busy(struct Event *ev){
 }
 
 int arrive_2_busy(struct Event *ev){
+  if(DEBUG){printf("\nArrived 2 in Busy\n");}
+  if(DEBUG)print_actual_state();
   state->cloud_2++;
+  if(DEBUG)print_actual_state();
   //Complete event 2_2
   generate_completion_event(ev, mu_cloud_2, EVENT_COMPLETED_2_IN_2, PATH_2_2);
   push_event(ev);
@@ -194,9 +216,12 @@ int setup_busy(struct Event *ev){
 }
 
 int arrive_1_busy_2(struct Event *ev){
+  if(DEBUG){printf("\nArrived 1 in Busy 2\n");}
+  if(DEBUG)print_actual_state();
   state->cloudlet_1++;
   state->cloudlet_2--;
   state->setup_2++;
+  if(DEBUG)print_actual_state();
   //gen compl_1_1 and compl_setup and arrivo_1
 
   //Complete event 1_1
@@ -205,9 +230,9 @@ int arrive_1_busy_2(struct Event *ev){
 
   //Complete event 2_setup, seek last event in list with type EVENT_COMPLETED_2_IN_1
   struct Event *to_remove = remove_last_event_of_type(EVENT_COMPLETED_2_IN_1);
+
   generate_completion_event(to_remove, mu_setup_2, EVENT_COMPLETED_2_IN_SETUP, PATH_2_S_2);
   push_event(to_remove);
-
   //Generate next arrival 1
   struct Event * arrival = generate_arrive_event(lambda_1, EVENT_ARRIVE1);
   push_event(arrival);
@@ -215,7 +240,10 @@ int arrive_1_busy_2(struct Event *ev){
 }
 
 int arrive_2_busy_2(struct Event *ev){
+  if(DEBUG){printf("\nArrived 2 in Busy 2\n");}
+  if(DEBUG)print_actual_state();
   state->cloud_2++;
+  if(DEBUG)print_actual_state();
   //Complete event 2_2
   generate_completion_event(ev, mu_cloud_2, EVENT_COMPLETED_2_IN_2, PATH_2_2);
   push_event(ev);
@@ -232,25 +260,38 @@ int setup_busy_2(struct Event *ev){
 }
 
 int compl_1_1(struct Event *ev){
+  if(DEBUG){fprintf(stderr,"\nCompletion 1 in Cloudlet\n");}
+  if(DEBUG)print_actual_state();
   state->cloudlet_1--;
+  if(DEBUG)print_actual_state();
   exit_event(ev);
   return 0;
 }
 
 int compl_1_2(struct Event *ev){
-  state->cloudlet_2--;
+  if(DEBUG){fprintf(stdout,"\nCompletion 1 in Cloud\n");}
+  if(DEBUG)print_actual_state();
+  state->cloud_1--;
+  if(DEBUG)print_actual_state();
   exit_event(ev);
   return 0;
 }
 
 int compl_2_1(struct Event *ev){
-  state->cloud_1--;
+  if(DEBUG){fprintf(stdout,"\nCompletion 2 in Cloudlet\n");}
+  if(DEBUG)print_actual_state();
+  state->cloudlet_2--;
+  if(DEBUG)print_actual_state();
   exit_event(ev);
+
   return 0;
 }
 
 int compl_2_2(struct Event *ev){
+  if(DEBUG){fprintf(stdout, "\nCompletion 2 in Cloud\n");}
+  if(DEBUG)print_actual_state();
   state->cloud_2--;
+  if(DEBUG)print_actual_state();
   exit_event(ev);
   return 0;
 }
@@ -366,9 +407,11 @@ void gen_next_ev(struct Event *ev, int s_state){
 
 void process_event(struct Event *ev){
   int s_state = get_system_state(get_event_type(ev));
+  int ev_type = get_event_type(ev);
+
   //set t_current
   set_t(ev->time);
-  int is_arrival = s_state == EVENT_ARRIVE1 || s_state == EVENT_ARRIVE2 || s_state == EVENT_COMPLETED_2_IN_SETUP;
+  int is_arrival = ev_type == EVENT_ARRIVE1 || ev_type == EVENT_ARRIVE2 || ev_type == EVENT_COMPLETED_2_IN_SETUP;
   if (is_arrival){
     gen_next_ev(ev, s_state);
   }
@@ -420,6 +463,9 @@ int main(int argc, char ** argv)
   {
     process_event(pop_event());
   }
+
+  printf("End Simulation with:\n");
+  print_actual_state();
   return EXIT_SUCCESS;
 
 
