@@ -76,8 +76,8 @@ double get_t(){
   return t_current;
 }
 
-void set_t(double time){
-  t_current = time;
+void set_t(double time_now){
+  t_current = time_now;
 }
 
 void print_actual_state()
@@ -504,6 +504,7 @@ int main(int argc, char ** argv)
 
   printf("End Simulation with: ");
   print_actual_state();
+  printf("Mean should be:\n%f - %f - %f - %f - ?\n",1/mu_cloudlet_1, 1/mu_cloud_1, 1/mu_cloudlet_2, 1/mu_cloud_2);
   printf("Mean for path: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%Lf - %Lf - %Lf - %Lf - %Lf\n", mean_time_per_path[0]/counter_per_path[0],mean_time_per_path[1]/counter_per_path[1],mean_time_per_path[2]/counter_per_path[2],mean_time_per_path[3]/counter_per_path[3],mean_time_per_path[4]/counter_per_path[4]);
   printf("P calculated: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%f - %f - %f - %f - %f\n", counter_per_path[0]*1.0/counter_exited,counter_per_path[1]*1.0/counter_exited,counter_per_path[2]*1.0/counter_exited,counter_per_path[3]*1.0/counter_exited,counter_per_path[4]*1.0/counter_exited);
   return EXIT_SUCCESS;
