@@ -33,7 +33,7 @@
 #define mu_cloud_2 0.22
 #define mu_setup_2 1.25
 
-#define DEBUG 1
+int DEBUG =1;
 
 struct Event {
   double time;
@@ -337,9 +337,9 @@ int (*transition_matrix[3][3])(struct Event *) = {{arrive_1_free, arrive_1_busy_
 
 int initialize_parameters(int argc, char ** argv)
 {
-  if(argc != 5)
+  if(argc != 6)
   {
-    fprintf(stderr, "Usage: %s <N> <S> <end_time> <initial_seed>\n", argv[0]);
+    fprintf(stderr, "Usage: %s <N> <S> <end_time> <initial_seed> <debug 0 or 1>\n", argv[0]);
     return EXIT_FAILURE;
   }
   else
@@ -370,6 +370,13 @@ int initialize_parameters(int argc, char ** argv)
     if (errno != 0)
     {
       fprintf(stderr, "Error in conversion - initial seed\n");
+      return EXIT_FAILURE;
+    }
+
+    DEBUG = strtol(argv[5] , NULL, 10);
+    if (errno != 0)
+    {
+      fprintf(stderr, "Error in conversion - debug must be 0 or 1\n");
       return EXIT_FAILURE;
     }
 
