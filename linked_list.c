@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
+void print_events();
 
 struct Event {
   double time;
@@ -125,6 +125,7 @@ struct Event * remove_last_event_of_type(int type)
       }
       actual = actual->prev;
     }
+    fprintf(stderr, "Warning, event type %d not found\n", type);
     return NULL;
   }
 
@@ -138,7 +139,7 @@ void print_events()
   if(events != NULL){
     struct Event * actual = events;
     while(actual != NULL){
-      printf(" %f,",actual->time);
+      printf(" %f:%d,",actual->time,actual->type);
       actual = actual->next;
     }
     printf("\n");
