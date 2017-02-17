@@ -125,7 +125,7 @@ struct Event * generate_arrive_event(double lambda, int EVENT){
   event->prev = NULL;
   event->time = generate_next_time(lambda, EVENT);
   event->type = EVENT;
-  event->arrival_time = get_t();
+  event->arrival_time = event->time; //Arrival time must be when the packet arrives, not when event is generated!!!
   event->path = -1; //Invalid path
 
   if(DEBUG){printf("Event Generation: Arrived %d at %f, next time %f\n", EVENT, event->arrival_time, event->time);}
@@ -137,7 +137,7 @@ void exit_event(struct Event * event){
   counter_exited++;
   counter_per_path[event->path-3]++;
   mean_time_per_path[event->path-3] += get_t()-event->arrival_time;
-  if(DEBUG){printf("Event Destroyed: Exited packet with path %d at %f\n", event->path, get_t());}
+  if(DEBUG){printf("Event Destroyed: Exited packet with path %d at %f after %f\n", event->path, get_t(),get_t()-event->arrival_time);}
   free(event);
 }
 
