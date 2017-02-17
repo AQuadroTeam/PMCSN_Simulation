@@ -464,7 +464,7 @@ int main(int argc, char ** argv)
     process_event(pop_event());
   }
 
-  printf("End Simulation with:\n");
+  printf("End Simulation with: ");
   print_actual_state();
   return EXIT_SUCCESS;
 
