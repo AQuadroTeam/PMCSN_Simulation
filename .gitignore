@@ -1,5 +1,6 @@
 # Compiled files
 simulation
+./simulation
 
 # Object files
 *.o
