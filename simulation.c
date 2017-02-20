@@ -552,13 +552,14 @@ int main(int argc, char ** argv)
       process_event(pop_event());
     }
     printf("\n\nBATCH %d finished\n", batch_active);
+    print_actual_state();
     printf("Mean should be:\n%f - %f - %f - %f - ?\n",1/mu_cloudlet_1, 1/mu_cloud_1, 1/mu_cloudlet_2, 1/mu_cloud_2);
     printf("Mean for path: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%Lf - %Lf - %Lf - %Lf - %Lf. Mean of wasted time %Lf \n", mean_time_per_path_now()[0]/counter_per_path_now()[0],mean_time_per_path_now()[1]/counter_per_path_now()[1],mean_time_per_path_now()[2]/counter_per_path_now()[2],mean_time_per_path_now()[3]/counter_per_path_now()[3],mean_time_per_path_now()[4]/counter_per_path_now()[4], mean_time_wasted_in_cloudlet_now()/counter_per_path_now()[4]);
     printf("P calculated: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%f - %f - %f - %f - %f\n", counter_per_path_now()[0]*1.0/counter_exited_now(),counter_per_path_now()[1]*1.0/counter_exited_now(),counter_per_path_now()[2]*1.0/counter_exited_now(),counter_per_path_now()[3]*1.0/counter_exited_now(),counter_per_path_now()[4]*1.0/counter_exited_now());
   }
 
-  printf("End Simulation with: ");
-  print_actual_state();
+  printf("End Simulation\n ");
+
 
   return EXIT_SUCCESS;
 
