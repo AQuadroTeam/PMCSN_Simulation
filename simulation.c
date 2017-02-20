@@ -76,6 +76,56 @@ int N;
 int S;
 long initial_seed;
 
+long double tot_mean_counter_exited(struct Batch_Stat *st){
+  long double mean = 0.0;
+  int i = 0;
+  int n = sizeof(st)/sizeof(st[0]);
+  for(int i=0; i<n; i++){
+    mean += st[i].counter_exited;
+  }
+  return mean/n;
+}
+
+long double tot_mean_counter_generated(struct Batch_Stat *st){
+  long double mean = 0.0;
+  int i = 0;
+  int n = sizeof(st)/sizeof(st[0]);
+  for(int i=0; i<n; i++){
+    mean += st[i].counter_generated;
+  }
+  return mean/n;
+}
+
+long double tot_mean_counter_per_path(struct Batch_Stat *st, int s_path){
+  long double mean = 0.0;
+  int i = 0;
+  int n = sizeof(st)/sizeof(st[0]);
+  for(int i=0; i<n; i++){
+    mean += st[i].counter_per_path[s_path];
+  }
+  return mean/n;
+}
+
+long double tot_mean_time_per_path(struct Batch_Stat *st, int s_path){
+  long double mean = 0.0;
+  int i = 0;
+  int n = sizeof(st)/sizeof(st[0]);
+  for(int i=0; i<n; i++){
+    mean += st[i].mean_time_per_path[s_path];
+  }
+  return mean/n;
+}
+
+long double tot_mean_time_wasted_in_cloudlet(struct Batch_Stat *st){
+  long double mean = 0.0;
+  int i = 0;
+  int n = sizeof(st)/sizeof(st[0]);
+  for(int i=0; i<n; i++){
+    mean += st[i].mean_time_wasted_in_cloudlet;
+  }
+  return mean/n;
+}
+
 long * counter_per_path_now(){
   return stats[batch_active].counter_per_path;
 }
