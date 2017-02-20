@@ -67,6 +67,7 @@ long double mean_time_wasted_in_cloudlet = 0.0;
 
 // Parameters
 double t_end = 0.0;
+int batch_number_total= 0;
 int N;
 int S;
 long initial_seed;
@@ -340,9 +341,9 @@ int (*transition_matrix[3][3])(struct Event *) = {{arrive_1_free, arrive_1_busy_
 
 int initialize_parameters(int argc, char ** argv)
 {
-  if(argc != 6)
+  if(argc != 7)
   {
-    fprintf(stderr, "Usage: %s <N> <S> <end_time> <initial_seed> <debug 0 or 1>\n", argv[0]);
+    fprintf(stderr, "Usage: %s <N> <S> <end_time> <initial_seed> <# of batch intervals> <debug 0 or 1>\n", argv[0]);
     return EXIT_FAILURE;
   }
   else
@@ -376,7 +377,14 @@ int initialize_parameters(int argc, char ** argv)
       return EXIT_FAILURE;
     }
 
-    DEBUG = strtol(argv[5] , NULL, 10);
+    batch_number_total = strtol(argv[5] , NULL, 10);
+    if (errno != 0)
+    {
+      fprintf(stderr, "Error in conversion - batch number total\n");
+      return EXIT_FAILURE;
+    }
+
+    DEBUG = strtol(argv[6] , NULL, 10);
     if (errno != 0)
     {
       fprintf(stderr, "Error in conversion - debug must be 0 or 1\n");
@@ -495,7 +503,7 @@ int main(int argc, char ** argv)
   initialize_state();
   initialize_events();
 
-  printf("Started simulation with N=%d, S=%d, t_end=%f, seed=%ld\n", N,S,t_end,initial_seed);
+  printf("Started simulation with N=%d, S=%d, t_end=%f, batch#=%d, seed=%ld\n", N,S,t_end,batch_number_total,initial_seed);
 
 
   while(get_t() <= t_end )
