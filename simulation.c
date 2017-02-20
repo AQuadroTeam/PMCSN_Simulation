@@ -63,6 +63,7 @@ long counter_per_path[5];
 long counter_generated = -2;
 long counter_exited = 0;
 long double mean_time_per_path[5] = {0,0,0,0,0};
+long double mean_time_wasted_in_cloudlet = 0.0;
 
 // Parameters
 double t_end = 0.0;
@@ -76,8 +77,8 @@ double get_t(){
   return t_current;
 }
 
-void set_t(double time){
-  t_current = time;
+void set_t(double time_now){
+  t_current = time_now;
 }
 
 void print_actual_state()
@@ -125,7 +126,7 @@ struct Event * generate_arrive_event(double lambda, int EVENT){
   event->prev = NULL;
   event->time = generate_next_time(lambda, EVENT);
   event->type = EVENT;
-  event->arrival_time = get_t();
+  event->arrival_time = event->time; //Arrival time must be when the packet arrives, not when event is generated!!!
   event->path = -1; //Invalid path
 
   if(DEBUG){printf("Event Generation: Arrived %d at %f, next time %f\n", EVENT, event->arrival_time, event->time);}
@@ -137,7 +138,7 @@ void exit_event(struct Event * event){
   counter_exited++;
   counter_per_path[event->path-3]++;
   mean_time_per_path[event->path-3] += get_t()-event->arrival_time;
-  if(DEBUG){printf("Event Destroyed: Exited packet with path %d at %f\n", event->path, get_t());}
+  if(DEBUG){printf("Event Destroyed: Exited packet with path %d at %f after %f\n", event->path, get_t(),get_t()-event->arrival_time);}
   free(event);
 }
 
@@ -251,8 +252,8 @@ int arrive_1_busy_2(struct Event *ev){
 
   //Complete event 2_setup, seek last event in list with type EVENT_COMPLETED_2_IN_1
   struct Event *to_remove = remove_last_event_of_type(EVENT_COMPLETED_2_IN_1);
-
   generate_completion_event(to_remove, mu_setup_2, EVENT_COMPLETED_2_IN_SETUP, PATH_2_S_2);
+  mean_time_wasted_in_cloudlet += get_t()-to_remove->arrival_time;
   push_event(to_remove);
   //Generate next arrival 1
   struct Event * arrival = generate_arrive_event(lambda_1, EVENT_ARRIVE1);
@@ -504,7 +505,8 @@ int main(int argc, char ** argv)
 
   printf("End Simulation with: ");
   print_actual_state();
-  printf("Mean for path: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%Lf - %Lf - %Lf - %Lf - %Lf\n", mean_time_per_path[0]/counter_per_path[0],mean_time_per_path[1]/counter_per_path[1],mean_time_per_path[2]/counter_per_path[2],mean_time_per_path[3]/counter_per_path[3],mean_time_per_path[4]/counter_per_path[4]);
+  printf("Mean should be:\n%f - %f - %f - %f - ?\n",1/mu_cloudlet_1, 1/mu_cloud_1, 1/mu_cloudlet_2, 1/mu_cloud_2);
+  printf("Mean for path: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%Lf - %Lf - %Lf - %Lf - %Lf. Mean of wasted time %Lf \n", mean_time_per_path[0]/counter_per_path[0],mean_time_per_path[1]/counter_per_path[1],mean_time_per_path[2]/counter_per_path[2],mean_time_per_path[3]/counter_per_path[3],mean_time_per_path[4]/counter_per_path[4], mean_time_wasted_in_cloudlet/counter_per_path[4]);
   printf("P calculated: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%f - %f - %f - %f - %f\n", counter_per_path[0]*1.0/counter_exited,counter_per_path[1]*1.0/counter_exited,counter_per_path[2]*1.0/counter_exited,counter_per_path[3]*1.0/counter_exited,counter_per_path[4]*1.0/counter_exited);
   return EXIT_SUCCESS;
 
