@@ -1,3 +1,6 @@
+# Simulated data
+*.data
+
 # Compiled files
 simulation
 ./simulation

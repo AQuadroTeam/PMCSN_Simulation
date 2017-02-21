@@ -99,6 +99,7 @@ int batch_number_total= 0;
 int N;
 int S;
 long initial_seed;
+FILE * export_file;
 
 void set_end_means(long double f_clet, long double s_clet, long double f_cloud, long double s_cloud, long double setup_cloud){
   end_means->first_clet = f_clet;
@@ -235,6 +236,17 @@ void print_actual_state()
 }
 
 /*
+  file export
+*/
+void save_response_time(long double time, int path){
+  fprintf(export_file, "%d;%d;%Lf\ntail",batch_active,path, time);
+}
+
+
+
+
+
+/*
     STATISTICAL FUNCTIONS
 */
 double generate_exp(double lambda, int stream)
@@ -246,6 +258,8 @@ double generate_exp(double lambda, int stream)
 double generate_next_time(double lambda, int stream){
   return generate_exp(lambda, stream) + get_t();
 }
+
+
 
 struct Event * generate_completion_event(struct Event * event, double mu, int next_event_type, int path){
 
@@ -284,6 +298,7 @@ void exit_event(struct Event * event){
   counter_exited_increment();
   counter_per_path_increment(event->path-3);
   mean_time_per_path_add(event->path-3, get_t()-event->arrival_time);
+  save_response_time(get_t()-event->arrival_time, event->path-3);
 
   if(DEBUG){printf("Event Destroyed: Exited packet with path %d at %f after %f\n", event->path, get_t(),get_t()-event->arrival_time);}
   free(event);
@@ -541,6 +556,27 @@ int initialize_parameters(int argc, char ** argv)
   }
 }
 
+void initialize_export_file(){
+  char name[255];
+  sprintf(name,"simN%d-S%d-batch_time_total%.1f-batch%d-seed%ld.data", N,S,t_end,batch_number_total,initial_seed);
+
+
+  export_file = fopen(name, "w");
+  if(export_file == NULL){
+    fprintf(stderr, "errore nella fopen\n");
+    perror("initializing");
+    exit(EXIT_FAILURE);
+  }
+
+  fprintf(export_file, "batch;path;response_time\n\n");
+}
+
+void close_export_file(){
+  fprintf(export_file, "\n\nEND OF SIMULATION\n");
+
+  fclose(export_file);
+}
+
 int get_event_type(struct Event *t_event){
   return t_event->type;
 }
@@ -666,6 +702,7 @@ int main(int argc, char ** argv)
   initialize_generators(initial_seed);
   initialize_state();
   initialize_events();
+  initialize_export_file();
 
   printf("Started simulation with N=%d, S=%d, batch_time_total=%f, batch#=%d, seed=%ld\n", N,S,t_end,batch_number_total,initial_seed);
 
@@ -702,6 +739,8 @@ int main(int argc, char ** argv)
 
   //double alpha = 0.05;
   //double t_star = idfStudent(batch_number_total-1, 1-alpha/2);
+
+  close_export_file();
 
   return EXIT_SUCCESS;
 }
