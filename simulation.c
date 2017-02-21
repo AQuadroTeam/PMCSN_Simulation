@@ -75,6 +75,7 @@ int batch_number_total= 0;
 int N;
 int S;
 long initial_seed;
+FILE * export_file;
 
 long double tot_mean_counter_exited(){
   long double mean = 0.0;
@@ -169,6 +170,17 @@ void print_actual_state()
 
 
 /*
+  file export
+*/
+void save_response_time(long double time, int path){
+  fprintf(export_file, "%d;%d;%Lf\ntail",batch_active,path, time);
+}
+
+
+
+
+
+/*
     STATISTICAL FUNCTIONS
 */
 double generate_exp(double lambda, int stream)
@@ -180,6 +192,8 @@ double generate_exp(double lambda, int stream)
 double generate_next_time(double lambda, int stream){
   return generate_exp(lambda, stream) + get_t();
 }
+
+
 
 struct Event * generate_completion_event(struct Event * event, double mu, int next_event_type, int path){
 
@@ -218,6 +232,7 @@ void exit_event(struct Event * event){
   counter_exited_increment();
   counter_per_path_increment(event->path-3);
   mean_time_per_path_add(event->path-3, get_t()-event->arrival_time);
+  save_response_time(get_t()-event->arrival_time, event->path-3);
 
   if(DEBUG){printf("Event Destroyed: Exited packet with path %d at %f after %f\n", event->path, get_t(),get_t()-event->arrival_time);}
   free(event);
@@ -475,6 +490,27 @@ int initialize_parameters(int argc, char ** argv)
   }
 }
 
+void initialize_export_file(){
+  char name[255];
+  sprintf(name,"simN%d-S%d-batch_time_total%.1f-batch%d-seed%ld.data", N,S,t_end,batch_number_total,initial_seed);
+
+
+  export_file = fopen(name, "w");
+  if(export_file == NULL){
+    fprintf(stderr, "errore nella fopen\n");
+    perror("initializing");
+    exit(EXIT_FAILURE);
+  }
+
+  fprintf(export_file, "batch;path;response_time\n\n");
+}
+
+void close_export_file(){
+  fprintf(export_file, "\n\nEND OF SIMULATION\n");
+
+  fclose(export_file);
+}
+
 int get_event_type(struct Event *t_event){
   return t_event->type;
 }
@@ -588,6 +624,7 @@ int main(int argc, char ** argv)
   initialize_generators(initial_seed);
   initialize_state();
   initialize_events();
+  initialize_export_file();
 
   printf("Started simulation with N=%d, S=%d, batch_time_total=%f, batch#=%d, seed=%ld\n", N,S,t_end,batch_number_total,initial_seed);
 
@@ -607,6 +644,8 @@ int main(int argc, char ** argv)
   printf("Mean should be:\n%f - %f - %f - %f - ?\n",1/mu_cloudlet_1, 1/mu_cloud_1, 1/mu_cloudlet_2, 1/mu_cloud_2);
   printf("Mean for path: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%Lf - %Lf - %Lf - %Lf - %Lf. Mean of wasted time %Lf \n", tot_mean_time_per_path(0)/tot_mean_counter_per_path(0),tot_mean_time_per_path(1)/tot_mean_counter_per_path(1),tot_mean_time_per_path(2)/tot_mean_counter_per_path(2),tot_mean_time_per_path(3)/tot_mean_counter_per_path(3),tot_mean_time_per_path(4)/tot_mean_counter_per_path(4), tot_mean_time_wasted_in_cloudlet()/tot_mean_counter_per_path(4));
   printf("P calculated: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%Lf - %Lf - %Lf - %Lf - %Lf\n", tot_mean_counter_per_path(0)*1.0/tot_mean_counter_exited(),tot_mean_counter_per_path(1)*1.0/tot_mean_counter_exited(),tot_mean_counter_per_path(2)*1.0/tot_mean_counter_exited(),tot_mean_counter_per_path(3)*1.0/tot_mean_counter_exited(),tot_mean_counter_per_path(4)*1.0/tot_mean_counter_exited());
+
+  close_export_file();
 
   return EXIT_SUCCESS;
 }
