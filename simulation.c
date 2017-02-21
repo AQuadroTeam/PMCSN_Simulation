@@ -68,7 +68,30 @@ struct Batch_Stat {
   long double mean_time_wasted_in_cloudlet;
 };
 
+struct Tot_Mean_Time {
+  long double first_clet;
+  long double second_clet;
+  long double first_cloud;
+  long double second_cloud;
+  long double setup_cloud;
+};
+
+struct Tot_Wasted_Time {
+  long double clet;
+};
+
+struct Probabilities {
+  double first_clet;
+  double second_clet;
+  double first_cloud;
+  double second_cloud;
+  double setup_cloud;
+};
+
 struct Batch_Stat *stats;
+struct Tot_Mean_Time *end_means;
+struct Tot_Wasted_Time *w_times;
+struct Probabilities *probs;
 
 // Parameters
 double t_end = 0.0;
@@ -77,59 +100,79 @@ int N;
 int S;
 long initial_seed;
 
+void set_end_means(long double f_clet, long double s_clet, long double f_cloud, long double s_cloud, long double setup_cloud){
+  end_means->first_clet = f_clet;
+  end_means->second_clet = s_clet;
+  end_means->first_cloud = f_cloud;
+  end_means->first_cloud = s_cloud;
+  end_means->setup_cloud = setup_cloud;
+}
+
+void set_probabilities(long double f_clet, long double s_clet, long double f_cloud, long double s_cloud, long double setup_cloud){
+  probs->first_clet = (double) f_clet;
+  probs->second_clet = (double) s_clet;
+  probs->first_cloud = (double) f_cloud;
+  probs->first_cloud = (double) s_cloud;
+  probs->setup_cloud = (double) setup_cloud;
+}
+
+void set_wasted_times(long double clet){
+  w_times->clet = clet;
+}
+
 long double tot_mean_counter_exited(){
   long double mean = 0.0;
-  int n = sizeof(stats)/sizeof(stats[0]);
+  int n = batch_number_total;
   for(int i=0; i<n; i++){
-    if (isnan(stats[i].counter_exited) != 1){
-      mean += stats[i].counter_exited;
+    if (isnan((double)stats[i].counter_exited) != 1){
+      mean += stats[i].counter_exited/n;
     }
   }
-  return mean/n;
+  return mean;
 }
 
 long double tot_mean_counter_generated(){
   long double mean = 0.0;
-  int n = sizeof(stats)/sizeof(stats[0]);
+  int n = batch_number_total;
   for(int i=0; i<n; i++){
-    if (isnan(stats[i].counter_generated) != 1){
-      mean += stats[i].counter_generated;
+    if (isnan((double)stats[i].counter_generated) != 1){
+      mean += stats[i].counter_generated/n;
     }
   }
-  return mean/n;
+  return mean;
 }
 
 long double tot_mean_counter_per_path(int s_path){
   long double mean = 0.0;
-  int n = sizeof(stats)/sizeof(stats[0]);
+  int n = batch_number_total;
   for(int i=0; i<n; i++){
-    if (isnan(stats[i].counter_per_path[s_path])!=1){
-      mean += stats[i].counter_per_path[s_path];
+    if (isnan((double)stats[i].counter_per_path[s_path])!=1){
+      mean += stats[i].counter_per_path[s_path]/n;
     }
   }
-  return mean/n;
+  return mean;
 }
 
 long double tot_mean_time_per_path(int s_path){
   long double mean = 0.0;
-  int n = sizeof(stats)/sizeof(stats[0]);
+  int n = batch_number_total;
   for(int i=0; i<n; i++){
-    if (isnan(stats[i].mean_time_per_path[s_path])!=1){
-      mean += stats[i].mean_time_per_path[s_path];
+    if (isnan((double)stats[i].mean_time_per_path[s_path])!=1){
+      mean += stats[i].mean_time_per_path[s_path]/n;
     }
   }
-  return mean/n;
+  return mean;
 }
 
 long double tot_mean_time_wasted_in_cloudlet(){
   long double mean = 0.0;
-  int n = sizeof(stats)/sizeof(stats[0]);
+  int n = batch_number_total;
   for(int i=0; i<n; i++){
-    if (isnan(stats[i].mean_time_wasted_in_cloudlet)!=1){
-      mean += stats[i].mean_time_wasted_in_cloudlet;
+    if (isnan((double)stats[i].mean_time_wasted_in_cloudlet)!=1){
+      mean += stats[i].mean_time_wasted_in_cloudlet/n;
     }
   }
-  return mean/n;
+  return mean;
 }
 
 long * counter_per_path_now(){
@@ -165,16 +208,17 @@ void mean_time_wasted_in_cloudlet_add(long double time){
 }
 
 void set_mean_time_per_path(){
-  int n = sizeof(mean_time_per_path_now())/sizeof(mean_time_per_path_now()[0]);
+  int n = 5;
   for (int i=0;i<n;i++){
+    //fprintf(stderr,"mean_time_per_path_now %d = mean_time_per_path_now %Lf/ counter_per_path_now %ld\n",i,mean_time_per_path_now()[i],counter_per_path_now()[i]);
     mean_time_per_path_now()[i] = mean_time_per_path_now()[i]/counter_per_path_now()[i];
   }
 }
 
 void set_mean_wasted_time_for_cloudlet(){
-  stats[batch_active].mean_time_wasted_in_cloudlet = mean_time_wasted_in_cloudlet_now()/counter_per_path_now()[4];
+  //fprintf(stderr,"mean_time_wasted_in_cloudlet = mean_time_wasted_in_cloudlet_now %Lf/ counter_per_path_now %ld\n",mean_time_wasted_in_cloudlet_now(),counter_per_path_now()[4]);
+  stats[batch_active].mean_time_wasted_in_cloudlet = (long double)mean_time_wasted_in_cloudlet_now()/counter_per_path_now()[4];
 }
-
 
 double get_t(){
   return t_current;
@@ -189,7 +233,6 @@ void print_actual_state()
   fprintf(stdout, "state at %f: cloudlet (%d,%d), cloud (%d,%d), setup %d. Path completed: cloudlet(%ld,%ld),cloud(%ld,%ld),withSetup(%ld). Entered %ld, Served %ld\n",
     get_t(),state->cloudlet_1,state->cloudlet_2,state->cloud_1,state->cloud_2,state->setup_2, counter_per_path_now()[0],counter_per_path_now()[2],counter_per_path_now()[1],counter_per_path_now()[3],counter_per_path_now()[4],counter_generated_now(),counter_exited_now());
 }
-
 
 /*
     STATISTICAL FUNCTIONS
@@ -585,6 +628,15 @@ void initialize_state()
 void initialize_batch_stats(){
   stats = (struct Batch_Stat *)calloc(sizeof(struct Batch_Stat), batch_number_total);
 }
+void initialize_tot_mean_time(){
+  end_means = (struct Tot_Mean_Time *)calloc(sizeof(struct Tot_Mean_Time), 1);
+}
+void initialize_tot_wasted_time(){
+  w_times = (struct Tot_Wasted_Time*)calloc(sizeof(struct Tot_Wasted_Time), 1);
+}
+void initialize_probabilities(){
+  probs = (struct Probabilities *)calloc(sizeof(struct Probabilities), 1);
+}
 
 void initialize_generators(long seed){
   PlantSeeds(seed);
@@ -623,21 +675,30 @@ int main(int argc, char ** argv)
     print_actual_state();
 
 
-    mean_time_per_path_now()[0] = mean_time_per_path_now()[0]/counter_per_path_now()[0];
-
-
+    /*mean_time_per_path_now()[0] = mean_time_per_path_now()[0]/counter_per_path_now()[0];
+    mean_time_per_path_now()[1] = mean_time_per_path_now()[1]/counter_per_path_now()[1];
+    mean_time_per_path_now()[2] = mean_time_per_path_now()[2]/counter_per_path_now()[2];
+    mean_time_per_path_now()[3] = mean_time_per_path_now()[3]/counter_per_path_now()[3];
+    mean_time_per_path_now()[4] = mean_time_per_path_now()[4]/counter_per_path_now()[4];*/
+    set_mean_time_per_path();
+    set_mean_wasted_time_for_cloudlet();
 
     printf("Mean should be:\n%f - %f - %f - %f - ?\n",1/mu_cloudlet_1, 1/mu_cloud_1, 1/mu_cloudlet_2, 1/mu_cloud_2);
-    printf("Mean for path: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%Lf - %Lf - %Lf - %Lf - %Lf. Mean of wasted time %Lf \n", mean_time_per_path_now()[0],mean_time_per_path_now()[1]/counter_per_path_now()[1],mean_time_per_path_now()[2]/counter_per_path_now()[2],mean_time_per_path_now()[3]/counter_per_path_now()[3],mean_time_per_path_now()[4]/counter_per_path_now()[4], mean_time_wasted_in_cloudlet_now()/counter_per_path_now()[4]);
+    printf("Mean for path: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%Lf - %Lf - %Lf - %Lf - %Lf. Mean of wasted time %Lf \n", mean_time_per_path_now()[0],mean_time_per_path_now()[1],mean_time_per_path_now()[2],mean_time_per_path_now()[3],mean_time_per_path_now()[4], mean_time_wasted_in_cloudlet_now());
     printf("P calculated: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%f - %f - %f - %f - %f\n", counter_per_path_now()[0]*1.0/counter_exited_now(),counter_per_path_now()[1]*1.0/counter_exited_now(),counter_per_path_now()[2]*1.0/counter_exited_now(),counter_per_path_now()[3]*1.0/counter_exited_now(),counter_per_path_now()[4]*1.0/counter_exited_now());
   }
 
-  set_mean_time_per_path();
-  set_mean_wasted_time_for_cloudlet();
+  set_end_means(tot_mean_time_per_path(0), tot_mean_time_per_path(1), tot_mean_time_per_path(2), tot_mean_time_per_path(3), tot_mean_time_per_path(4));
+  set_wasted_times(tot_mean_time_wasted_in_cloudlet());
+  set_probabilities(tot_mean_counter_per_path(0)/tot_mean_counter_exited(), tot_mean_counter_per_path(1)/tot_mean_counter_exited(), tot_mean_counter_per_path(2)/tot_mean_counter_exited(), tot_mean_counter_per_path(3)/tot_mean_counter_exited(), tot_mean_counter_per_path(4)/tot_mean_counter_exited());
+
   printf("End Simulation\n ");
   printf("Mean should be:\n%f - %f - %f - %f - ?\n",1/mu_cloudlet_1, 1/mu_cloud_1, 1/mu_cloudlet_2, 1/mu_cloud_2);
-  printf("Mean for path: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%Lf - %Lf - %Lf - %Lf - %Lf. Mean of wasted time %Lf \n", tot_mean_time_per_path(0),tot_mean_time_per_path(1),tot_mean_time_per_path(2),tot_mean_time_per_path(3),tot_mean_time_per_path(4), tot_mean_time_wasted_in_cloudlet());
-  printf("P calculated: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%Lf - %Lf - %Lf - %Lf - %Lf\n", tot_mean_counter_per_path(0)*1.0/tot_mean_counter_exited(),tot_mean_counter_per_path(1)*1.0/tot_mean_counter_exited(),tot_mean_counter_per_path(2)*1.0/tot_mean_counter_exited(),tot_mean_counter_per_path(3)*1.0/tot_mean_counter_exited(),tot_mean_counter_per_path(4)*1.0/tot_mean_counter_exited());
+  printf("Mean for path: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%Lf - %Lf - %Lf - %Lf - %Lf. Mean of wasted time %Lf \n", end_means->first_clet,end_means->second_clet,end_means->first_cloud,end_means->second_cloud,end_means->setup_cloud, w_times->clet);
+  printf("P calculated: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%f - %f - %f - %f - %f\n", probs->first_clet, probs->second_clet, probs->first_cloud, probs->second_cloud, probs->setup_cloud);
+
+  //double alpha = 0.05;
+  //double t_star = idfStudent(batch_number_total-1, 1-alpha/2);
 
   return EXIT_SUCCESS;
 }
