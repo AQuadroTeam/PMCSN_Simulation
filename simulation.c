@@ -104,7 +104,7 @@ void set_end_means(long double f_clet, long double s_clet, long double f_cloud, 
   end_means->first_clet = f_clet;
   end_means->second_clet = s_clet;
   end_means->first_cloud = f_cloud;
-  end_means->first_cloud = s_cloud;
+  end_means->second_cloud = s_cloud;
   end_means->setup_cloud = setup_cloud;
 }
 
@@ -112,7 +112,7 @@ void set_probabilities(long double f_clet, long double s_clet, long double f_clo
   probs->first_clet = (double) f_clet;
   probs->second_clet = (double) s_clet;
   probs->first_cloud = (double) f_cloud;
-  probs->first_cloud = (double) s_cloud;
+  probs->second_cloud = (double) s_cloud;
   probs->setup_cloud = (double) setup_cloud;
 }
 
@@ -660,6 +660,9 @@ int main(int argc, char ** argv)
   }
 
   initialize_batch_stats();
+  initialize_tot_mean_time();
+  initialize_tot_wasted_time();
+  initialize_probabilities();
   initialize_generators(initial_seed);
   initialize_state();
   initialize_events();
