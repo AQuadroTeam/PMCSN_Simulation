@@ -26,6 +26,10 @@
 #define PATH_2_S_2 7
 #define PATH_NOT_TO_UPDATE -2
 
+#define GOVERNOR_FIRST = 0
+#define GOVERNOR_LAST = 1
+#define GOVERNOR_RND = 2
+
 #define lambda_1 3.25
 #define lambda_2 6.25
 #define mu_cloudlet_1 0.45
@@ -99,6 +103,7 @@ int batch_number_total= 0;
 int N;
 int S;
 long initial_seed;
+int PREEMPTION_GOVERNOR = 0;
 FILE * export_file;
 
 void set_end_means(long double f_clet, long double s_clet, long double f_cloud, long double s_cloud, long double setup_cloud){
@@ -239,7 +244,7 @@ void print_actual_state()
   file export
 */
 void save_response_time(long double time, int path){
-  fprintf(export_file, "%d;%d;%Lf\ntail",batch_active,path, time);
+  fprintf(export_file, "%d;%d;%Lf\n",batch_active,path, time);
 }
 
 
@@ -413,7 +418,7 @@ int arrive_1_busy_2(struct Event *ev){
   push_event(ev);
 
   //Complete event 2_setup, seek last event in list with type EVENT_COMPLETED_2_IN_1
-  struct Event *to_remove = remove_last_event_of_type(EVENT_COMPLETED_2_IN_1);
+  struct Event *to_remove = remove_event_of_type(PREEMPTION_GOVERNOR,EVENT_COMPLETED_2_IN_1);
   generate_completion_event(to_remove, mu_setup_2, EVENT_COMPLETED_2_IN_SETUP, PATH_2_S_2);
   mean_time_wasted_in_cloudlet_add(get_t()-to_remove->arrival_time);
   push_event(to_remove);
@@ -502,9 +507,9 @@ int (*transition_matrix[3][3])(struct Event *) = {{arrive_1_free, arrive_1_busy_
 
 int initialize_parameters(int argc, char ** argv)
 {
-  if(argc != 7)
+  if(argc != 8)
   {
-    fprintf(stderr, "Usage: %s <N> <S> <end_time> <initial_seed> <# of batch intervals> <debug 0 or 1>\n", argv[0]);
+    fprintf(stderr, "Usage: %s <N> <S> <end_time> <initial_seed> <# of batch intervals> <preemption governor 0 first,1 last,2 random> <debug 0 or 1>\n", argv[0]);
     return EXIT_FAILURE;
   }
   else
@@ -545,7 +550,14 @@ int initialize_parameters(int argc, char ** argv)
       return EXIT_FAILURE;
     }
 
-    DEBUG = strtol(argv[6] , NULL, 10);
+    PREEMPTION_GOVERNOR = strtol(argv[6] , NULL, 10);
+    if (errno != 0)
+    {
+      fprintf(stderr, "Error in conversion - preemption governor\n");
+      return EXIT_FAILURE;
+    }
+
+    DEBUG = strtol(argv[7] , NULL, 10);
     if (errno != 0)
     {
       fprintf(stderr, "Error in conversion - debug must be 0 or 1\n");
@@ -558,7 +570,7 @@ int initialize_parameters(int argc, char ** argv)
 
 void initialize_export_file(){
   char name[255];
-  sprintf(name,"simN%d-S%d-batch_time_total%.1f-batch%d-seed%ld.data", N,S,t_end,batch_number_total,initial_seed);
+  sprintf(name,"simN%d-S%d-batch_time_total%.1f-batch%d-seed%ld-gv%d.data", N,S,t_end,batch_number_total,initial_seed,PREEMPTION_GOVERNOR);
 
 
   export_file = fopen(name, "w");
@@ -704,7 +716,7 @@ int main(int argc, char ** argv)
   initialize_events();
   initialize_export_file();
 
-  printf("Started simulation with N=%d, S=%d, batch_time_total=%f, batch#=%d, seed=%ld\n", N,S,t_end,batch_number_total,initial_seed);
+  printf("Started simulation with N=%d, S=%d, batch_time_total=%f, batch#=%d, seed=%ld, governor=%d\n", N,S,t_end,batch_number_total,initial_seed,PREEMPTION_GOVERNOR);
 
   for (batch_active = 0; batch_active < batch_number_total; batch_active++){
     while(get_t() <= t_end*(batch_active+1) )

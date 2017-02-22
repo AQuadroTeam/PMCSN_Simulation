@@ -1,5 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
+#define GOVERNOR_FIRST  0
+#define GOVERNOR_LAST  1
+#define GOVERNOR_RND  2
 
 void print_events();
 
@@ -133,6 +136,50 @@ struct Event * remove_last_event_of_type(int type)
     return NULL;
   }
 }
+
+struct Event * remove_first_event_of_type(int type)
+{
+  if(events != NULL){
+    struct Event * actual = events;
+
+    while(actual != NULL){
+      if(actual->type == type){
+        return remove_event(actual);
+      }
+      actual = actual->next;
+    }
+    fprintf(stderr, "Warning, event type %d not found\n", type);
+    return NULL;
+  }
+
+  else{
+    return NULL;
+  }
+}
+
+struct Event * remove_a_event_of_type(int type)
+{
+  fprintf(stderr, "TO IMPLEMENT\n");
+  return NULL;
+}
+
+struct Event * remove_event_of_type(int gov, int type)
+{
+  switch (gov) {
+    case GOVERNOR_FIRST:
+      return remove_first_event_of_type(type);
+      break;
+    case GOVERNOR_LAST:
+      return remove_last_event_of_type(type);
+      break;
+    case GOVERNOR_RND:
+      return remove_a_event_of_type(type);
+      break;
+  }
+  return NULL;
+}
+
+
 
 void print_events()
 {
