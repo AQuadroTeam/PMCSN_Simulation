@@ -47,6 +47,7 @@ struct Event {
   struct Event * prev;
   double arrival_time;
   int path;
+  double wasted_time;
 };
 
 struct State {
@@ -243,8 +244,8 @@ void print_actual_state()
 /*
   file export
 */
-void save_response_time(long double time, int path){
-  fprintf(export_file, "%d;%d;%Lf\n",batch_active,path, time);
+void save_response_time(long double time, int path, double wasted){
+  fprintf(export_file, "%d;%d;%Lf;%f\n",batch_active,path, time,wasted);
 }
 
 
@@ -303,7 +304,7 @@ void exit_event(struct Event * event){
   counter_exited_increment();
   counter_per_path_increment(event->path-3);
   mean_time_per_path_add(event->path-3, get_t()-event->arrival_time);
-  save_response_time(get_t()-event->arrival_time, event->path-3);
+  save_response_time(get_t()-event->arrival_time, event->path-3, event->wasted_time);
 
   if(DEBUG){printf("Event Destroyed: Exited packet with path %d at %f after %f\n", event->path, get_t(),get_t()-event->arrival_time);}
   free(event);
@@ -420,6 +421,7 @@ int arrive_1_busy_2(struct Event *ev){
   //Complete event 2_setup, seek last event in list with type EVENT_COMPLETED_2_IN_1
   struct Event *to_remove = remove_event_of_type(PREEMPTION_GOVERNOR,EVENT_COMPLETED_2_IN_1);
   generate_completion_event(to_remove, mu_setup_2, EVENT_COMPLETED_2_IN_SETUP, PATH_2_S_2);
+  to_remove->wasted_time = get_t()-to_remove->arrival_time;
   mean_time_wasted_in_cloudlet_add(get_t()-to_remove->arrival_time);
   push_event(to_remove);
   //Generate next arrival 1

@@ -13,6 +13,7 @@ struct Event {
   struct Event * prev;
   double arrival_time;
   int path;
+  double wasted_time;
 };
 
 struct Event * events = NULL;
