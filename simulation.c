@@ -252,6 +252,8 @@ void save_response_time(long double time, int path, double wasted){
 
 
 
+
+
 /*
     STATISTICAL FUNCTIONS
 */
@@ -582,7 +584,7 @@ void initialize_export_file(){
     exit(EXIT_FAILURE);
   }
 
-  fprintf(export_file, "batch;path;response_time\n\n");
+  fprintf(export_file, "batch;path;response_time;wasted_time\n\n");
 }
 
 void close_export_file(){
@@ -747,9 +749,10 @@ int main(int argc, char ** argv)
   set_probabilities(tot_mean_counter_per_path(0)/tot_mean_counter_exited(), tot_mean_counter_per_path(1)/tot_mean_counter_exited(), tot_mean_counter_per_path(2)/tot_mean_counter_exited(), tot_mean_counter_per_path(3)/tot_mean_counter_exited(), tot_mean_counter_per_path(4)/tot_mean_counter_exited());
 
   printf("End Simulation\n ");
-  printf("Mean should be:\n%f - %f - %f - %f - ?\n",1/mu_cloudlet_1, 1/mu_cloud_1, 1/mu_cloudlet_2, 1/mu_cloud_2);
-  printf("Mean for path: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%Lf - %Lf - %Lf - %Lf - %Lf. Mean of wasted time %Lf \n", end_means->first_clet,end_means->second_clet,end_means->first_cloud,end_means->second_cloud,end_means->setup_cloud, w_times->clet);
-  printf("P calculated: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%f - %f - %f - %f - %f\n", probs->first_clet, probs->second_clet, probs->first_cloud, probs->second_cloud, probs->setup_cloud);
+  printf("\nEnded simulation with N=%d, S=%d, batch_time_total=%f, batch#=%d, seed=%ld, governor=%d\n", N,S,t_end,batch_number_total,initial_seed,PREEMPTION_GOVERNOR);
+  printf("Total Mean should be:\n%f - %f - %f - %f - ?\n",1/mu_cloudlet_1, 1/mu_cloud_1, 1/mu_cloudlet_2, 1/mu_cloud_2);
+  printf("Total Mean for path: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%Lf - %Lf - %Lf - %Lf - %Lf. Mean of wasted time %Lf \n", end_means->first_clet,end_means->second_clet,end_means->first_cloud,end_means->second_cloud,end_means->setup_cloud, w_times->clet);
+  printf("Total P calculated: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%f - %f - %f - %f - %f\n", probs->first_clet, probs->second_clet, probs->first_cloud, probs->second_cloud, probs->setup_cloud);
 
   //double alpha = 0.05;
   //double t_star = idfStudent(batch_number_total-1, 1-alpha/2);
