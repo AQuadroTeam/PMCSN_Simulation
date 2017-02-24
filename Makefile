@@ -22,3 +22,6 @@ $(TARGET): $(OBJECTS)
 clean:
 	-rm -f *.o
 	-rm -f $(TARGET)
+
+clean_data:
+	-rm -f *.data
