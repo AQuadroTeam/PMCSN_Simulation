@@ -81,7 +81,19 @@ struct Tot_Mean_Time {
   long double setup_cloud;
 };
 
+struct Tot_Std_Time {
+  long double first_clet;
+  long double second_clet;
+  long double first_cloud;
+  long double second_cloud;
+  long double setup_cloud;
+};
+
 struct Tot_Wasted_Time {
+  long double clet;
+};
+
+struct Tot_Std_Wasted_Time {
   long double clet;
 };
 
@@ -93,10 +105,21 @@ struct Probabilities {
   double setup_cloud;
 };
 
+struct Std_Probabilities {
+  double first_clet;
+  double second_clet;
+  double first_cloud;
+  double second_cloud;
+  double setup_cloud;
+};
+
 struct Batch_Stat *stats;
 struct Tot_Mean_Time *end_means;
 struct Tot_Wasted_Time *w_times;
 struct Probabilities *probs;
+struct Tot_Std_Time *end_stds;
+struct Tot_Std_Wasted_Time *w_stds;
+struct Std_Probabilities *probs_stds;
 
 long double calc_general_path_mean(struct Tot_Mean_Time *end_means, struct Probabilities* probs){
   return end_means->first_clet*probs->first_clet + end_means->second_clet*probs->second_clet +
@@ -119,12 +142,24 @@ void set_end_means(long double f_clet, long double s_clet, long double f_cloud, 
   end_means->setup_cloud = setup_cloud;
 }
 
+void set_end_stds(long double f_clet, long double s_clet, long double f_cloud, long double s_cloud, long double setup_cloud){
+  end_stds->first_clet = f_clet;
+  end_stds->second_clet = s_clet;
+  end_stds->first_cloud = f_cloud;
+  end_stds->second_cloud = s_cloud;
+  end_stds->setup_cloud = setup_cloud;
+}
+
 void set_probabilities(long double f_clet, long double s_clet, long double f_cloud, long double s_cloud, long double setup_cloud){
   probs->first_clet = (double) f_clet;
   probs->second_clet = (double) s_clet;
   probs->first_cloud = (double) f_cloud;
   probs->second_cloud = (double) s_cloud;
   probs->setup_cloud = (double) setup_cloud;
+}
+
+void set_wasted_stds(long double clet){
+  w_stds->clet = clet;
 }
 
 void set_wasted_times(long double clet){
@@ -184,6 +219,32 @@ long double tot_mean_time_wasted_in_cloudlet(){
     }
   }
   return mean;
+}
+
+long double calculate_sd_time_per_path(int s_path, long double mean)
+{
+    long double standardDeviation = 0.0;
+    int i;
+
+    for(i=0; i<batch_number_total; i++){
+      if (isnan((double)stats[i].mean_time_per_path[s_path])!=1){
+        standardDeviation += pow((double)stats[i].mean_time_per_path[s_path] - mean, 2)/batch_number_total;
+      }
+    }
+    return sqrt(standardDeviation);
+}
+
+long double calculate_sd_wasted_time(long double mean)
+{
+    long double standardDeviation = 0.0;
+    int i;
+
+    for(i=0; i<batch_number_total; i++){
+      if (isnan((double)stats[i].mean_time_wasted_in_cloudlet)!=1){
+        standardDeviation += pow((double)stats[i].mean_time_wasted_in_cloudlet - mean, 2)/batch_number_total;
+      }
+    }
+    return sqrt(standardDeviation);
 }
 
 long * counter_per_path_now(){
@@ -687,8 +748,14 @@ void initialize_batch_stats(){
 void initialize_tot_mean_time(){
   end_means = (struct Tot_Mean_Time *)calloc(sizeof(struct Tot_Mean_Time), 1);
 }
+void initialize_tot_mean_time_stds(){
+  end_stds = (struct Tot_Std_Time *)calloc(sizeof(struct Tot_Std_Time), 1);
+}
 void initialize_tot_wasted_time(){
   w_times = (struct Tot_Wasted_Time*)calloc(sizeof(struct Tot_Wasted_Time), 1);
+}
+void initialize_wasted_stds(){
+  w_stds = (struct Tot_Std_Wasted_Time*)calloc(sizeof(struct Tot_Std_Wasted_Time), 1);
 }
 void initialize_probabilities(){
   probs = (struct Probabilities *)calloc(sizeof(struct Probabilities), 1);
@@ -718,6 +785,8 @@ int main(int argc, char ** argv)
   initialize_batch_stats();
   initialize_tot_mean_time();
   initialize_tot_wasted_time();
+  initialize_tot_mean_time_stds();
+  initialize_wasted_stds();
   initialize_probabilities();
   initialize_generators(initial_seed);
   initialize_state();
@@ -758,6 +827,18 @@ int main(int argc, char ** argv)
   printf("Total Mean for path: 1_1, 1_2, 2_1, 2_2, 2_S_2,Total\n%Lf - %Lf - %Lf - %Lf - %Lf - %Lf - %Lf\n", end_means->first_clet,end_means->second_clet,end_means->first_cloud,end_means->second_cloud,end_means->setup_cloud, w_times->clet, calc_general_path_mean(end_means,probs));
   printf("Total P calculated: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%f - %f - %f - %f - %f\n", probs->first_clet, probs->second_clet, probs->first_cloud, probs->second_cloud, probs->setup_cloud);
 
+  /*
+  end_means
+  w_times
+  probs
+
+  end_stds
+  w_stds
+  probs_stds
+  */
+  set_end_stds(calculate_sd_time_per_path(0, end_means->first_clet), calculate_sd_time_per_path(1, end_means->second_clet), calculate_sd_time_per_path(2, end_means->first_cloud), calculate_sd_time_per_path(3, end_means->second_cloud), calculate_sd_time_per_path(4, end_means->setup_cloud));
+  set_wasted_stds(calculate_sd_wasted_time(w_times->clet));
+  printf("Total Stds for path: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%Lf - %Lf - %Lf - %Lf - %Lf - %Lf\n", end_stds->first_clet,end_stds->second_clet,end_stds->first_cloud,end_stds->second_cloud,end_stds->setup_cloud, w_stds->clet);
   //double alpha = 0.05;
   //double t_star = idfStudent(batch_number_total-1, 1-alpha/2);
 
