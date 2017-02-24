@@ -98,6 +98,10 @@ struct Tot_Mean_Time *end_means;
 struct Tot_Wasted_Time *w_times;
 struct Probabilities *probs;
 
+long double calc_general_path_mean(struct Tot_Mean_Time *end_means, struct Probabilities* probs){
+  return end_means->first_clet*probs->first_clet + end_means->second_clet*probs->second_clet +
+    end_means->first_cloud*probs->first_cloud + end_means->second_cloud*probs->second_cloud + end_means->setup_cloud*probs->setup_cloud;
+}
 // Parameters
 double t_end = 0.0;
 int batch_number_total= 0;
@@ -751,7 +755,7 @@ int main(int argc, char ** argv)
   printf("End Simulation\n ");
   printf("\nEnded simulation with N=%d, S=%d, batch_time_total=%f, batch#=%d, seed=%ld, governor=%d\n", N,S,t_end,batch_number_total,initial_seed,PREEMPTION_GOVERNOR);
   printf("Total Mean should be:\n%f - %f - %f - %f - ?\n",1/mu_cloudlet_1, 1/mu_cloud_1, 1/mu_cloudlet_2, 1/mu_cloud_2);
-  printf("Total Mean for path: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%Lf - %Lf - %Lf - %Lf - %Lf - %Lf \n", end_means->first_clet,end_means->second_clet,end_means->first_cloud,end_means->second_cloud,end_means->setup_cloud, w_times->clet);
+  printf("Total Mean for path: 1_1, 1_2, 2_1, 2_2, 2_S_2,Total\n%Lf - %Lf - %Lf - %Lf - %Lf - %Lf - %Lf\n", end_means->first_clet,end_means->second_clet,end_means->first_cloud,end_means->second_cloud,end_means->setup_cloud, w_times->clet, calc_general_path_mean(end_means,probs));
   printf("Total P calculated: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%f - %f - %f - %f - %f\n", probs->first_clet, probs->second_clet, probs->first_cloud, probs->second_cloud, probs->setup_cloud);
 
   //double alpha = 0.05;
