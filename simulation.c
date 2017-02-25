@@ -847,12 +847,6 @@ int main(int argc, char ** argv)
     printf("\n\nBATCH %d finished\n", batch_active);
     print_actual_state();
 
-
-    /*mean_time_per_path_now()[0] = mean_time_per_path_now()[0]/counter_per_path_now()[0];
-    mean_time_per_path_now()[1] = mean_time_per_path_now()[1]/counter_per_path_now()[1];
-    mean_time_per_path_now()[2] = mean_time_per_path_now()[2]/counter_per_path_now()[2];
-    mean_time_per_path_now()[3] = mean_time_per_path_now()[3]/counter_per_path_now()[3];
-    mean_time_per_path_now()[4] = mean_time_per_path_now()[4]/counter_per_path_now()[4];*/
     set_mean_time_per_path();
     set_mean_wasted_time_for_cloudlet();
     set_mean_total_time_batch();
@@ -869,7 +863,6 @@ int main(int argc, char ** argv)
   //Just to see if they return the same result
   //long double general_path = calc_general_path_mean(end_means,probs);
   long double general_path = calculate_medium_total_response_time_2();
-  //long double general_path_mean_not_weigthed = calculate_medium_total_response_time_2();
 
   printf("End Simulation\n ");
   printf("\nEnded simulation with N=%d, S=%d, batch_time_total=%f, batch#=%d, seed=%ld, governor=%d\n", N,S,t_end,batch_number_total,initial_seed,PREEMPTION_GOVERNOR);
@@ -877,15 +870,6 @@ int main(int argc, char ** argv)
   printf("Total Mean for path: 1_1, 1_2, 2_1, 2_2, 2_S_2,Total\n%Lf - %Lf - %Lf - %Lf - %Lf - %Lf - %Lf\n", end_means->first_clet,end_means->second_clet,end_means->first_cloud,end_means->second_cloud,end_means->setup_cloud, w_times->clet, general_path);
   printf("Total P calculated: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%f - %f - %f - %f - %f\n", probs->first_clet, probs->second_clet, probs->first_cloud, probs->second_cloud, probs->setup_cloud);
 
-  /*
-  end_means
-  w_times
-  probs
-
-  end_stds
-  w_stds
-  probs_stds
-  */
   set_end_stds(calculate_sd_time_per_path(0, end_means->first_clet), calculate_sd_time_per_path(1, end_means->second_clet), calculate_sd_time_per_path(2, end_means->first_cloud), calculate_sd_time_per_path(3, end_means->second_cloud), calculate_sd_time_per_path(4, end_means->setup_cloud));
   set_wasted_stds(calculate_sd_wasted_time(w_times->clet));
   printf("Total Stds for path: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%Lf - %Lf - %Lf - %Lf - %Lf - %Lf\n", end_stds->first_clet,end_stds->second_clet,end_stds->first_cloud,end_stds->second_cloud,end_stds->setup_cloud, w_stds->clet);
