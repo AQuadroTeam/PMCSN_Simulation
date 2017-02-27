@@ -10,7 +10,7 @@ do
   do
     echo "Doing S " $S
 
-    result=$(./simulation $N $S 1000 10136 64 1 0 | grep "Ended simulation" -A 6)
+    result=$(./simulation $N $S 1000 10136 64 1 0 | grep "Ended simulation" -A 8)
     part_time=$(echo "$result" | grep "Total Mean for path" -A 1 | grep "Total Mean for path" -v)
     part_prob=$(echo "$result" | grep "Total P" -A 2 | grep "Total P" -v)
     echo $part_time - $part_prob >> response_time_n_$N.data

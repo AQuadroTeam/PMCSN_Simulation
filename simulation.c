@@ -869,6 +869,7 @@ int main(int argc, char ** argv)
   printf("Total Mean should be:\n%f - %f - %f - %f - ?\n",1/mu_cloudlet_1, 1/mu_cloud_1, 1/mu_cloudlet_2, 1/mu_cloud_2);
   printf("Total Mean for path: 1_1, 1_2, 2_1, 2_2, 2_S_2,Total\n%Lf - %Lf - %Lf - %Lf - %Lf - %Lf - %Lf\n", end_means->first_clet,end_means->second_clet,end_means->first_cloud,end_means->second_cloud,end_means->setup_cloud, w_times->clet, general_path);
   printf("Total P calculated: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%f - %f - %f - %f - %f\n", probs->first_clet, probs->second_clet, probs->first_cloud, probs->second_cloud, probs->setup_cloud);
+  printf("Effective throughput \n%Lf\n",tot_mean_counter_exited()/t_end);
 
   set_end_stds(calculate_sd_time_per_path(0, end_means->first_clet), calculate_sd_time_per_path(1, end_means->second_clet), calculate_sd_time_per_path(2, end_means->first_cloud), calculate_sd_time_per_path(3, end_means->second_cloud), calculate_sd_time_per_path(4, end_means->setup_cloud));
   set_wasted_stds(calculate_sd_wasted_time(w_times->clet));
@@ -891,8 +892,6 @@ int main(int argc, char ** argv)
   printf("Total Std for response time\n%Lf\n",general_path_sd);
   long double trr = (t_star*general_path_sd)/sqrt(batch_number_total-1);
   printf("Interval for total response time\n%Lf +- %Lf\n",general_path,trr);
-
-  printf("Effective throughput\n%Lf\n",tot_mean_counter_exited()/(batch_number_total*t_end));
 
   close_export_file();
 
