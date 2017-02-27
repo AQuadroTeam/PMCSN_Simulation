@@ -174,55 +174,67 @@ end
 disp('End of Check')
 
 
-%% check if response_1_1 is a good exp ONLY FOR A BATCH
-
+%% check if response_1_1 is a good exp
+addpath('~/git/PMCSN_Simulation/');
+close all
+%1_1
 if counter_jobs_per_batch_path(batch_to_consider, 1) > 0
-    exp_1_1 = fitdist(response_1_1)
-    figure(1)
-    histfit(response_1_1, 1000, 'exponential')
-
-end
-if counter_jobs_per_batch_path(batch_to_consider, 2) > 0
-    exp_1_2 = fitdist(response_1_2,'exponential') % if 0 creates problems
-end
-if counter_jobs_per_batch_path(batch_to_consider, 3) > 0
-    exp_2_1 = fitdist(response_2_1,'Gamma')
-    figure(2)
-    histfit(response_2_1,100,'Gamma')
-
-end
-if counter_jobs_per_batch_path(batch_to_consider, 4) > 0
-    exp_2_2 = fitdist(response_2_2,'exponential')
-end
-if counter_jobs_per_batch_path(batch_to_consider, 5) > 0
-    exp_2_S_2 = fitdist(response_2_S_2,'Weibull')
-end
-
-if counter_jobs_per_batch(batch_to_consider) > 0
-    exp_total = fitdist(response_total,'Gamma')
-    figure(3)
-    histfit(response_total, 1000, 'Exponential')
-end
-
-
-if counter_jobs_per_batch_path(batch_to_consider, 1) > 0
+    
+    %%allfitdist(response_1_1,'PDF')
+    exp_1_1 = fitdist(response_1_1,'exponential')
+    
+    histfit(response_1_1, 100, 'exponential')
+    title('Fit of Response 1 1 to Exponential')
     [a_1_1,b_1_1,c_1_1]=chi2gof(response_1_1, 'CDF',exp_1_1,'Alpha',0.05)
+
 end
-if counter_jobs_per_batch_path(batch_to_consider, 2) > 0
+%%
+%1_2
+if counter_jobs_per_batch_path(batch_to_consider, 2) > 10
+    allfitdist(response_1_2,'PDF')
+    title('Fit of Response 1 2')
+
+    exp_1_2 = fitdist(response_1_2,'exponential') % if 0 creates problems
     [a_1_2,b_1_2,c_1_2]=chi2gof(response_1_2, 'CDF',exp_1_2)
 end
+%%
+%2_1
 if counter_jobs_per_batch_path(batch_to_consider, 3) > 0
+    exp_2_1 = fitdist(response_2_1,'Exponential')
+    allfitdist(response_2_1,'PDF')
+    title('Fit of Response 2 1')
+    %histfit(response_2_1,100,'Gamma')
     [a_2_1,b_2_1,c_2_1]=chi2gof(response_2_1, 'CDF',exp_2_1,'Alpha',0.05)
+   
 end
+%%
+%2_2
 if counter_jobs_per_batch_path(batch_to_consider, 4) > 0
+    exp_2_2 = fitdist(response_2_2,'exponential')
+    histfit(response_2_2,100,'Exponential')
+    title('Fit of Response 2 2 to Exponential')
     [a_2_2,b_2_2,c_2_2]=chi2gof(response_2_2, 'CDF',exp_2_2)
 end
+%%
+%2_S_2
 if counter_jobs_per_batch_path(batch_to_consider, 5) > 0
+    exp_2_S_2 = fitdist(response_2_S_2,'Gamma')
+    allfitdist(response_2_S_2,'PDF')
+    title('Fit of Response 2 S 2')
+
     [a_2_S_2,b_2_S_2,c_2_S_2]=chi2gof(response_2_S_2, 'CDF',exp_2_S_2)
 end
+%%
+%total
 if counter_jobs_per_batch(batch_to_consider) > 0
+    exp_total = fitdist(response_total,'Exponential')
+ 
+    allfitdist(response_total,'PDF')
+    title('Fit of General Response Time')
+    %histfit(response_total, 1000, 'Exponential')
     [a_total,b_total,c_total]=chi2gof(response_total, 'CDF',exp_total)
 end
+
 % mmm, this response_1_1 must be very similar to an exponential, so there's
 % a problem with my use of chi2gof
 
