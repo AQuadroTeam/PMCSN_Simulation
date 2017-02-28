@@ -195,15 +195,15 @@ if counter_jobs_per_batch_path(batch_to_consider, 4) > 0
     exp_2_2 = fitdist(response_2_2,'exponential')
 end
 if counter_jobs_per_batch_path(batch_to_consider, 5) > 0
-    exp_2_S_2 = fitdist(response_2_S_2,'Weibull')
+    exp_2_S_2 = fitdist(response_2_S_2,'Gamma')
 end
 
 if counter_jobs_per_batch(batch_to_consider) > 0
-    exp_total = fitdist(response_total,'Gamma')
+    exp_total = fitdist(response_total,'exponential')
     figure(3)
     histfit(response_total, 1000, 'Exponential')
 end
-
+%%
 
 if counter_jobs_per_batch_path(batch_to_consider, 1) > 0
     [a_1_1,b_1_1,c_1_1]=chi2gof(response_1_1, 'CDF',exp_1_1,'Alpha',0.05)
@@ -222,28 +222,6 @@ if counter_jobs_per_batch_path(batch_to_consider, 5) > 0
 end
 if counter_jobs_per_batch(batch_to_consider) > 0
     [a_total,b_total,c_total]=chi2gof(response_total, 'CDF',exp_total)
-end
-% mmm, this response_1_1 must be very similar to an exponential, so there's
-% a problem with my use of chi2gof
-
-%%
-if counter_jobs_per_batch_path(batch_to_consider, 1) > 0
-    kstest2(response_1_1,exp_1_1)
-end
-if counter_jobs_per_batch_path(batch_to_consider, 2) > 0
-    kstest2(response_1_2,exp_1_2)
-end
-if counter_jobs_per_batch_path(batch_to_consider, 3) > 0
-    kstest2(response_2_1,exp_2_1)
-end
-if counter_jobs_per_batch_path(batch_to_consider, 4) > 0
-    kstest2(response_2_2,exp_2_2)
-end
-if counter_jobs_per_batch_path(batch_to_consider, 5) > 0
-    kstest2(response_2_S_2,exp_2_S_2)
-end
-if counter_jobs_per_batch(batch_to_consider) > 0
-    kstest2(response_total,exp_total)
 end
 % mmm, this response_1_1 must be very similar to an exponential, so there's
 % a problem with my use of chi2gof

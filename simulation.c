@@ -135,6 +135,7 @@ int S;
 long initial_seed;
 int PREEMPTION_GOVERNOR = 0;
 FILE * export_file;
+double alpha = 0.05;
 
 //To save response times for each batch
 long double *batch_response_times;
@@ -825,6 +826,7 @@ int main(int argc, char ** argv)
   if(initialize_parameters(argc, argv) == EXIT_FAILURE){
     return EXIT_FAILURE;
   }
+  double t_star = idfStudent(batch_number_total-1, 1-alpha/2);
 
   initialize_batch_stats();
   initialize_tot_mean_time();
@@ -859,24 +861,12 @@ int main(int argc, char ** argv)
   set_end_means(tot_mean_time_per_path(0), tot_mean_time_per_path(1), tot_mean_time_per_path(2), tot_mean_time_per_path(3), tot_mean_time_per_path(4));
   set_wasted_times(tot_mean_time_wasted_in_cloudlet());
   set_probabilities(tot_mean_counter_per_path(0)/tot_mean_counter_exited(), tot_mean_counter_per_path(1)/tot_mean_counter_exited(), tot_mean_counter_per_path(2)/tot_mean_counter_exited(), tot_mean_counter_per_path(3)/tot_mean_counter_exited(), tot_mean_counter_per_path(4)/tot_mean_counter_exited());
+  set_end_stds(calculate_sd_time_per_path(0, end_means->first_clet), calculate_sd_time_per_path(1, end_means->second_clet), calculate_sd_time_per_path(2, end_means->first_cloud), calculate_sd_time_per_path(3, end_means->second_cloud), calculate_sd_time_per_path(4, end_means->setup_cloud));
+  set_wasted_stds(calculate_sd_wasted_time(w_times->clet));
 
   //Just to see if they return the same result
   //long double general_path = calc_general_path_mean(end_means,probs);
   long double general_path = calculate_medium_total_response_time_2();
-
-  printf("End Simulation\n ");
-  printf("\nEnded simulation with N=%d, S=%d, batch_time_total=%f, batch#=%d, seed=%ld, governor=%d\n", N,S,t_end,batch_number_total,initial_seed,PREEMPTION_GOVERNOR);
-  printf("Total Mean should be:\n%f - %f - %f - %f - ?\n",1/mu_cloudlet_1, 1/mu_cloud_1, 1/mu_cloudlet_2, 1/mu_cloud_2);
-  printf("Total Mean for path: 1_1, 1_2, 2_1, 2_2, 2_S_2,Total\n%Lf - %Lf - %Lf - %Lf - %Lf - %Lf - %Lf\n", end_means->first_clet,end_means->second_clet,end_means->first_cloud,end_means->second_cloud,end_means->setup_cloud, w_times->clet, general_path);
-  printf("Total P calculated: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%f - %f - %f - %f - %f\n", probs->first_clet, probs->second_clet, probs->first_cloud, probs->second_cloud, probs->setup_cloud);
-  printf("Effective throughput \n%Lf\n",tot_mean_counter_exited()/t_end);
-
-  set_end_stds(calculate_sd_time_per_path(0, end_means->first_clet), calculate_sd_time_per_path(1, end_means->second_clet), calculate_sd_time_per_path(2, end_means->first_cloud), calculate_sd_time_per_path(3, end_means->second_cloud), calculate_sd_time_per_path(4, end_means->setup_cloud));
-  set_wasted_stds(calculate_sd_wasted_time(w_times->clet));
-  printf("Total Stds for path: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%Lf - %Lf - %Lf - %Lf - %Lf - %Lf\n", end_stds->first_clet,end_stds->second_clet,end_stds->first_cloud,end_stds->second_cloud,end_stds->setup_cloud, w_stds->clet);
-
-  double alpha = 0.05;
-  double t_star = idfStudent(batch_number_total-1, 1-alpha/2);
 
   long double ts[5];
   ts[0] = (t_star*end_stds->first_clet)/sqrt(batch_number_total-1);
@@ -886,12 +876,21 @@ int main(int argc, char ** argv)
   ts[4] = (t_star*end_stds->setup_cloud)/sqrt(batch_number_total-1);
   ts[5] = (t_star*w_stds->clet)/sqrt(batch_number_total-1);
 
-  printf("Intervals for path:\n1_1 %Lf +- %Lf\n1_2 %Lf +- %Lf\n2_1 %Lf +- %Lf\n2_2 %Lf +- %Lf\n2_S_2 %Lf +- %Lf\nwasted_time %Lf +- %Lf\n", end_means->first_clet, ts[0],end_means->second_clet, ts[1],end_means->first_cloud, ts[2],end_means->second_cloud,ts[3],end_means->setup_cloud, ts[4], w_times->clet, ts[5]);
-
   long double general_path_sd = calculate_sd_total_response_time(general_path);
-  printf("Total Std for response time\n%Lf\n",general_path_sd);
   long double trr = (t_star*general_path_sd)/sqrt(batch_number_total-1);
+
+  printf("End Simulation\n ");
+  printf("\nEnded simulation with N=%d, S=%d, batch_time_total=%f, batch#=%d, seed=%ld, governor=%d\n", N,S,t_end,batch_number_total,initial_seed,PREEMPTION_GOVERNOR);
+  printf("Total Mean should be:\n%f - %f - %f - %f - ?\n",1/mu_cloudlet_1, 1/mu_cloud_1, 1/mu_cloudlet_2, 1/mu_cloud_2);
+  printf("Total Mean for path: 1_1, 1_2, 2_1, 2_2, 2_S_2, wasted, total\n%Lf - %Lf - %Lf - %Lf - %Lf - %Lf - %Lf\n", end_means->first_clet,end_means->second_clet,end_means->first_cloud,end_means->second_cloud,end_means->setup_cloud, w_times->clet, general_path);
+  printf("Total P calculated: 1_1, 1_2, 2_1, 2_2, 2_S_2\n%f - %f - %f - %f - %f\n", probs->first_clet, probs->second_clet, probs->first_cloud, probs->second_cloud, probs->setup_cloud);
+  printf("Effective throughput \n%Lf\n",tot_mean_counter_exited()/t_end);
+  printf("Total Stds for path: 1_1, 1_2, 2_1, 2_2, 2_S_2, wasted, total\n%Lf - %Lf - %Lf - %Lf - %Lf - %Lf - %Lf\n",ts[0],ts[1],ts[2],ts[3],ts[4],ts[5],trr);
+  printf("Intervals for path:\n1_1 %Lf +- %Lf\n1_2 %Lf +- %Lf\n2_1 %Lf +- %Lf\n2_2 %Lf +- %Lf\n2_S_2 %Lf +- %Lf\nwasted_time %Lf +- %Lf\n", end_means->first_clet, ts[0],end_means->second_clet, ts[1],end_means->first_cloud, ts[2],end_means->second_cloud,ts[3],end_means->setup_cloud, ts[4], w_times->clet, ts[5]);
   printf("Interval for total response time\n%Lf +- %Lf\n",general_path,trr);
+  
+  //printf("Intervals for path: 1_1, 1_2, 2_1, 2_2, 2_S_2, wasted, total\n%Lf - %Lf - %Lf - %Lf - %Lf - %Lf\n", end_stds->first_clet,end_stds->second_clet,end_stds->first_cloud,end_stds->second_cloud,end_stds->setup_cloud, w_stds->clet);
+  //printf("Total Std for response time\n%Lf\n",trr);
 
   close_export_file();
 

@@ -21,9 +21,10 @@ hold on
 %plot(x_ax, t_2_1,'LineWidth',2)
 %plot(x_ax, t_2_2,'LineWidth',2)
 %plot(x_ax, t_2_S_2,'LineWidth',2)
-plot(x_ax, t_wasted,'LineWidth',2)
+%plot(x_ax, t_wasted,'LineWidth',2)
 plot(x_ax, total_path,'LineWidth',2)
 plot(x_ax, thr,'LineWidth',2)
+errorbar(x_ax,t_wasted,s_wasted)
 %axis([0 25 0 10])
 grid on
 xlabel('S')
