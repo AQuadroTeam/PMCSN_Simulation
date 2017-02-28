@@ -179,6 +179,40 @@ addpath('~/git/PMCSN_Simulation/');
 close all
 %1_1
 if counter_jobs_per_batch_path(batch_to_consider, 1) > 0
+<<<<<<< HEAD
+    exp_1_1 = fitdist(response_1_1)
+    figure(1)
+    histfit(response_1_1, 1000, 'exponential')
+
+end
+if counter_jobs_per_batch_path(batch_to_consider, 2) > 0
+    exp_1_2 = fitdist(response_1_2,'exponential') % if 0 creates problems
+end
+if counter_jobs_per_batch_path(batch_to_consider, 3) > 0
+    exp_2_1 = fitdist(response_2_1,'Gamma')
+    figure(2)
+    histfit(response_2_1,100,'Gamma')
+
+end
+if counter_jobs_per_batch_path(batch_to_consider, 4) > 0
+    exp_2_2 = fitdist(response_2_2,'exponential')
+end
+if counter_jobs_per_batch_path(batch_to_consider, 5) > 0
+    exp_2_S_2 = fitdist(response_2_S_2,'Gamma')
+end
+
+if counter_jobs_per_batch(batch_to_consider) > 0
+    exp_total = fitdist(response_total,'exponential')
+    figure(3)
+    histfit(response_total, 1000, 'Exponential')
+end
+%%
+
+if counter_jobs_per_batch_path(batch_to_consider, 1) > 0
+    [a_1_1,b_1_1,c_1_1]=chi2gof(response_1_1, 'CDF',exp_1_1,'Alpha',0.05)
+end
+if counter_jobs_per_batch_path(batch_to_consider, 2) > 0
+=======
     
     %%allfitdist(response_1_1,'PDF')
     exp_1_1 = fitdist(response_1_1,'exponential')
@@ -195,6 +229,7 @@ if counter_jobs_per_batch_path(batch_to_consider, 2) > 10
     title('Fit of Response 1 2')
 
     exp_1_2 = fitdist(response_1_2,'exponential') % if 0 creates problems
+>>>>>>> 87d916a6b7cffae1d7864af30195bad89056fd14
     [a_1_2,b_1_2,c_1_2]=chi2gof(response_1_2, 'CDF',exp_1_2)
 end
 %%
@@ -235,28 +270,6 @@ if counter_jobs_per_batch(batch_to_consider) > 0
     [a_total,b_total,c_total]=chi2gof(response_total, 'CDF',exp_total)
 end
 
-% mmm, this response_1_1 must be very similar to an exponential, so there's
-% a problem with my use of chi2gof
-
-%%
-if counter_jobs_per_batch_path(batch_to_consider, 1) > 0
-    kstest2(response_1_1,exp_1_1)
-end
-if counter_jobs_per_batch_path(batch_to_consider, 2) > 0
-    kstest2(response_1_2,exp_1_2)
-end
-if counter_jobs_per_batch_path(batch_to_consider, 3) > 0
-    kstest2(response_2_1,exp_2_1)
-end
-if counter_jobs_per_batch_path(batch_to_consider, 4) > 0
-    kstest2(response_2_2,exp_2_2)
-end
-if counter_jobs_per_batch_path(batch_to_consider, 5) > 0
-    kstest2(response_2_S_2,exp_2_S_2)
-end
-if counter_jobs_per_batch(batch_to_consider) > 0
-    kstest2(response_total,exp_total)
-end
 % mmm, this response_1_1 must be very similar to an exponential, so there's
 % a problem with my use of chi2gof
 
