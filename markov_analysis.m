@@ -14,14 +14,15 @@ number_states = (N+1) * (S+1);
 Flux = zeros(number_states, number_states);
 P = zeros(number_states, number_states);
 
+
 addpath('~/git/PMCSN_Simulation/');
 
 % fill p
 for c1 = 0:N
     for c2 = 0:S
-        for target = 1:number_states
-            [f,up,down,right,left,busy1,busy2] = exit_flux(c1, c2, S, N,params);
-            if f > 0
+        [f,up,down,right,left,busy1,busy2] = exit_flux(c1, c2, S, N,params);
+        if f > 0
+            for target = 1:number_states
                 %down
                 if target == index_of_state(c1+1, c2,S) && down == 1
                     Flux(index_of_state(c1, c2,S), target) = lambda_1;
@@ -62,7 +63,14 @@ for c1 = 0:N
                     P(index_of_state(c1, c2,S), target) = (lambda_1)/f;
                 end
             end
-        end  
+            if f ~= sum(Flux(index_of_state(c1, c2,S),:))
+                disp('Error flux')
+                return
+            end
+        else
+            % solo per somma 1
+            P(index_of_state(c1, c2,S), 2) = 1;
+        end
     end
 end
 disp(Flux)
@@ -70,7 +78,7 @@ disp(P)
 
 % just a check...
 for row = 1:size(P,1)
-    if (sum(P(row,:)) ~= 1 && sum(P(row,:)) ~= 0)
+    if (sum(P(row,:)) ~= 1)
         disp('Errore nella matrice se il numero sotto è diverso da 1 o 0')
         disp(row)
         disp(sum(P(row,:)))
@@ -85,4 +93,38 @@ end
 [foo , tp] = sort(diag(D));
  
 PI = (V(: , tp(end))/sum(V(: , tp(end))))';
-PI
+disp('stationary probs sum=')
+disp(sum(PI))
+
+%%
+flux_2_immediately_discarded = 0;
+flux_2_preemptive = 0;
+for c1 = 0:N
+    for c2 = 0:S
+        if (c1+c2>=S)
+            flux_2_immediately_discarded = PI(index_of_state(c1,c2,S)) + flux_2_immediately_discarded;
+            if(c1>0)
+                flux_2_preemptive = flux_2_preemptive + PI(index_of_state(c1,c2,S)) ;
+            end
+        end
+    end
+end
+
+D = flux_2_immediately_discarded;
+A = PI(index_of_state(N,0,S));
+B = 1 - A;
+E = flux_2_preemptive*lambda_1/lambda_2;
+C = 1 - D - E;
+
+%
+disp('P calculated')
+disp('p_1_1')
+disp(B * lambda_1/(lambda_1+lambda_2))
+disp('p_1_2')
+disp(A * lambda_1/(lambda_1+lambda_2))
+disp('p_2_1')
+disp(C*lambda_2/(lambda_1+lambda_2))
+disp('p_2_2')
+disp(D*lambda_2/(lambda_1+lambda_2))
+disp('p_2_S_2')
+disp(E*lambda_2/(lambda_1+lambda_2))
