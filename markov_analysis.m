@@ -78,3 +78,11 @@ for row = 1:size(P,1)
 end
 
 
+%% calculate in PI the stationary probs
+
+[V , D ] = eig(P');
+ 
+[foo , tp] = sort(diag(D));
+ 
+PI = (V(: , tp(end))/sum(V(: , tp(end))))';
+PI
