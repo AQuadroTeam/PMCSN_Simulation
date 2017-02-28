@@ -1,8 +1,8 @@
 function [f,up,down,right,left,busy1,busy2] = exit_flux(c1, c2, S, N,params)
     if c1>N || c2>S  || (c1+c2>S && c2~=0)
         f = -1;
-        disp('OUT OF BOUND!!!')
-        disp([c1,c2,S,N])
+        %disp('OUT OF BOUND!!!')
+        %disp([c1,c2,S,N])
         up = 0;
         down = 0;
         right = 0;
