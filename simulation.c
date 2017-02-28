@@ -7,6 +7,10 @@
 #include "rvms.h"
 #include "rvgs.h"
 
+/*
+    MACROS
+*/
+
 #define EVENT_ARRIVE1  0
 #define EVENT_ARRIVE2  1
 #define EVENT_COMPLETED_1_IN_1  3
@@ -39,6 +43,10 @@
 #define mu_setup_2 1.25
 
 int DEBUG =1;
+
+/*
+    Structs
+*/
 
 struct Event {
   double time;
@@ -127,7 +135,10 @@ long double calc_general_path_mean(struct Tot_Mean_Time *end_means, struct Proba
     end_means->first_cloud*probs->first_cloud + end_means->second_cloud*probs->second_cloud + end_means->setup_cloud*probs->setup_cloud;
 }
 
-// Parameters
+/*
+    Parameters
+*/
+
 double t_end = 0.0;
 int batch_number_total= 0;
 int N;
@@ -138,6 +149,10 @@ FILE * export_file;
 
 //To save response times for each batch
 long double *batch_response_times;
+
+/*
+    BATCH FUNCTIONS
+*/
 
 void set_end_means(long double f_clet, long double s_clet, long double f_cloud, long double s_cloud, long double setup_cloud){
   end_means->first_clet = f_clet;
@@ -333,6 +348,10 @@ void set_mean_wasted_time_for_cloudlet(){
   stats[batch_active].mean_time_wasted_in_cloudlet = (long double)mean_time_wasted_in_cloudlet_now()/counter_per_path_now()[4];
 }
 
+/*
+    TIME FUNCTIONS
+*/
+
 double get_t(){
   return t_current;
 }
@@ -341,6 +360,10 @@ void set_t(double time_now){
   t_current = time_now;
 }
 
+/*
+    STATE FUNCTIONS
+*/
+
 void print_actual_state()
 {
   fprintf(stdout, "state at %f: cloudlet (%d,%d), cloud (%d,%d), setup %d. Path completed: cloudlet(%ld,%ld),cloud(%ld,%ld),withSetup(%ld). Entered %ld, Served %ld\n",
@@ -348,7 +371,7 @@ void print_actual_state()
 }
 
 /*
-  file export
+  FILE EXPORT FUNCTIONS
 */
 void save_response_time(long double time, int path, double wasted){
   fprintf(export_file, "%d;%d;%Lf;%f\n",batch_active,path, time,wasted);
@@ -374,7 +397,9 @@ double generate_next_time(double lambda, int stream){
 }
 
 
-
+/*
+    EVENT FUNCTIONS
+*/
 struct Event * generate_completion_event(struct Event * event, double mu, int next_event_type, int path){
 
   event->time = generate_next_time(mu, next_event_type);
@@ -420,7 +445,9 @@ void exit_event(struct Event * event){
   free(event);
 }
 
-//Transition Matrix
+/*
+    TRANSITIONS FUNCTIONS
+*/
 
 int arrive_1_free(struct Event *ev){
   if(DEBUG){printf("\nArrived 1 in free\n");}
@@ -702,6 +729,10 @@ void close_export_file(){
   fclose(export_file);
 }
 
+/*
+    SUPPORT FUNCTIONS
+*/
+
 int get_event_type(struct Event *t_event){
   return t_event->type;
 }
@@ -752,6 +783,10 @@ void decrease_job(struct Event *ev){
    }
 }
 
+/*
+    SIMULATION FUNCTIONS
+*/
+
 void gen_next_ev(struct Event *ev, int s_state){
   if (transition_matrix[get_event_type(ev)][s_state](ev)){
     fprintf(stderr, "Error generating next event\n");
@@ -773,6 +808,10 @@ void process_event(struct Event *ev){
     decrease_job(ev);
   }
 }
+
+/*
+    INITIALIZATION FUNCTIONS
+*/
 
 void initialize_state()
 {
@@ -818,6 +857,10 @@ void initialize_events()
   push_event(first_2);
 
 }
+
+/*
+    MAIN
+*/
 
 int main(int argc, char ** argv)
 {
