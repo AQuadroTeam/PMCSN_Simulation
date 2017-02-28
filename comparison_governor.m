@@ -1,7 +1,4 @@
-importdata('~/git/PMCSN_Simulation/governor_comparison_first.data', '-','1')
-importdata('~/git/PMCSN_Simulation/governor_comparison_last.data', '-','1')
-%non funzionano
-%%
+
 s = size(t_wasted_first,1)
 plot([1:1:s],t_wasted_first,'c','LineWidth',2)
 hold on
